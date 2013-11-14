@@ -1,0 +1,32 @@
+##################################################################
+#                                                                #
+#                       CHEMSOL 2.1                              #
+#                                                                #
+#               Jan Florian and Arieh Warshel                    #
+#                  Department of Chemistry                       #
+#             University of Southern California                  #
+#                 Los Angeles, CA 90089-1062                     #
+#                                                                #
+##################################################################
+                        November 3, 1999
+##################################################################
+
+
+File description:
+cs21_manual.cs..............manual in the postscript format
+cs21.f......................source code (Fortran 77) 
+cs..........................simple script to run cs21.exe
+vdw.par.....................standard parameter file
+cs.arc......................archive file 
+test*.......................examples of the input and output files
+
+The source code should be compiled with a Fortran77 compiler 
+available on your computer. For example, command
+
+f77 -o cs21.exe cs21.f
+
+should be used on a SGI machine. If you have problems
+with the compilation for your specific platform send email
+describing the error message to florian@usc.edu.
+
+

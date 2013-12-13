@@ -1,3 +1,4 @@
+! goto 10 50 15 41
 C################################################################
 C                                                                #
 C                        CHEMSOL 2.1                             #
@@ -110,6 +111,8 @@ C     Preffered method for calculation atomic charges is now ESP PCM-B3LYP/6-31G
       character*13 molname
       character*4 ssname
       character*256 fname
+      character*256 input_file_name
+      character*256 vdw_name
       character*3 relax 
       logical do_gas
       integer iac_conv (89), iacp(mxatm), mass(88)
@@ -146,10 +149,13 @@ c       81-Fr, 82-Ra.
 c     open archive (this is actually done in subroutine solvout
 c     open (43,file='cs.arc',access ='append')
 c     open input file with vdw and grid options
-      open (44, file='vdw.par')
+c     open (44, file='vdw.par')
+      call getarg(1,vdw_name)
+      open (44,file=vdw_name)
 c     open input file for atom input
-      call getenv('SOLVINP',fname)
-      open (45, file=fname)
+c     call getenv('SOLVINP',fname)
+      call getarg(2,input_file_name)
+      open (45,file=input_file_name)
       read (45,'(a13)') molname
       read (45,*) n_reg1, ngeom
       imp2 = 0 
@@ -329,7 +335,7 @@ c     write out solvation energy
       close (43)
       close (45)
 1000  format(1x,A8,F8.1,2F10.4,3F9.4)
-2000  format(//"############ SUBSTRUCTURE No.",i3," #############"/)
+2000  format(i3)
       end
 
 c--------------------------------------------------------------------
@@ -843,7 +849,7 @@ c      endif
         fsurfa(ientro)=fsurfa(ientro)+fs
         vdwsur(iz(i)) = vdwsur(iz(i)) + 1.d0
       endif
-
+      ! #GOTO 10
  10   continue
 
 c     Use atom polarizabilities (vdwc6) to calculate vdW part
@@ -1104,6 +1110,7 @@ c --  Alternatively, stop iterations if the minimum of the dG is reached.
      $  epom(ni-1).gt.epom(ni-2))  iconvp = 1
         if(iconvp.eq.1) then 
 c       write(6,'("Elgvn converged. Average = ",f8.3)') eave
+! #GOTO 50
         goto 50
         end if
       end if
@@ -1485,10 +1492,12 @@ c                 endif
 c                 jp3(npair3)=j
                endif
             endif
+! #GOTO 15            
  15      continue
          ip(i)=npair
          ip2(i)=npair2
          ip3(i)=npair3
+! #GOTO 10
  10   continue
 
       write(6,1001) ntotl,npair,rdcutl,npair2,out_cut,

@@ -1,5 +1,8 @@
+\#*\#
+.#*
 *.o
 *~
+*.mod
 *.dSYM/*
 main
 cs.arc

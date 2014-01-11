@@ -1,5 +1,5 @@
 program main
-  use chemsol, only : entropy
+  use chemsol, only : entropy,ef_ld
 !#################################################################
 !                                                                #
 !                        CHEMSOL 2.1                             #
@@ -239,7 +239,7 @@ program main
 !     Calculate translational entropy of the gas-phase solute (1M ideal
 !     gas, T=298.5)
 !      weight = amas
-      TdS_gas = entropy(amas)   
+!      TdS_gas = entropy(amas)   
       
 55    format(&
            $6x,"***********************************************************"/ &
@@ -250,7 +250,7 @@ program main
            $6x,"            University of Southern California              "/ &
            $6x,"                    Los Angeles, 1999                      "/ &
            $6x,"                                                           "/ &
-           $6x,"***********************************************************"//)
+           $6x,"***********************************************************",$)
 
       write (6,55)
       write (6,'(/" Solute                           : ",5x,a13)') molname

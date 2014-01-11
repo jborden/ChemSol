@@ -6,3 +6,5 @@
 *.dSYM/*
 main
 cs.arc
+.DS_Store
+cs21

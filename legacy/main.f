@@ -108,7 +108,7 @@ C     Preffered method for calculation atomic charges is now ESP PCM-B3LYP/6-31G
       common /vdwtds/ vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
       common /lra/ clgvn, slgvn
       character*8 atom,dumm1 
-      character*13 molname
+      character*8 molname
       character*4 ssname
       character*256 fname
       character*256 input_file_name

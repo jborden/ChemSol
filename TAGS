@@ -1,0 +1,64 @@
+
+BLOCKDATA1.f,33
+      Block Data blockdata2,70
+
+dg_ld.f,29
+      subroutine dg_ld 2,70
+
+ef_ld.f,29
+      subroutine ef_ld 4,73
+
+elgvn_ave.f,33
+      subroutine elgvn_ave(4,78
+
+entropy.f,36
+      Real*8 function entropy 2,70
+
+gen_gridx.f,33
+      subroutine gen_gridx 3,71
+
+lgvnx.f,29
+      subroutine lgvnx(2,70
+
+mu_mu_l.f,31
+      subroutine mu_mu_l 3,71
+
+newf_lcut.f,33
+      subroutine newf_lcut(3,71
+
+pairlistw.f,33
+      subroutine pairlistw(2,70
+
+ran2.f,26
+      function ran2 2,70
+
+ran_shift.f,33
+      subroutine ran_shift(3,71
+
+readopt.f,31
+      subroutine readopt 3,71
+
+sci_lgvn.f,32
+      subroutine sci_lgvn(3,71
+
+solvout.f,31
+      subroutine solvout 3,71
+
+updatelong.f,34
+      subroutine updatelong(3,71
+
+vatom.f,29
+      subroutine vatom 4,72
+
+vbornx.f,30
+      subroutine vbornx(3,71
+
+vlgvn.f,29
+      subroutine vlgvn 2,70
+
+chemsol.f90,32
+    real function entropy(4,42
+
+main.f90,0
+
+main.f,0

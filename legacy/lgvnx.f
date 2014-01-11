@@ -31,17 +31,19 @@ c:::  local vars
       data dash/72*'-'/
 c....................................................................
 
-      elgvn=0.d0
+      elgvn=0.d0 !total lgvn energy
 c     ephil1 and ephil2 are defined in readopt, sres is surface for 
 c     large fields.
 
-      sres= 0.0d0
-      elgvn=0.d0
-      fsurfa(ientro)=0.d0
-      evdwl(ientro)=0.d0
+      sres= 0.0d0 !?
+      !elgvn=0.d0                ! variable set to 0 again
+      fsurfa(ientro)=0.d0        ! ientro = 1 at first vlgvn call
+      evdwl(ientro)=0.d0         
       ndipole=0
       idum = 1
-      tds = 0.0d0
+      tds = 0.0d0               ! initialize tds to 0, should be done in lgvnx
+      ! after this is called, ndipole is set
+      ! n_inner = 0 before call, 741 after call
       call gen_gridx(center1,ndipole,ientro,0,iprint)
 
 c --   Cartesian coordinates of point dipoles {Angstrom} are stored
@@ -59,21 +61,22 @@ c      energy from the electric field scaled by the distance-dependent
 c      dielectric constant.
 
 c --   Get electric field at the positions of the dipoles (da(3,mxlgvn))
-      call ef_ld(ndipole,1)
+!      call ef_ld(ndipole,1)
+      da = ef_ld(xw,q,n_reg1,xl,ndipole,1)
 
       efn_max=-10.0d0
-      elgvn = 0.d0
+!      elgvn = 0.d0
       do i = 1,n_reg1
       vdwsur(i) = 0.d0
       end do
-
+      
       do 10 i=1,ndipole
-
+      
       gri_sp=drg_inner
       if(i.gt.n_inner) gri_sp=drg
-      if(i.eq.n_inner+1) elgvn_i = elgvn
+      if(i.eq.n_inner+1) elgvn_i = elgvn ! save elgvn_i for inner grid ld energies report
       efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
-      if (efn.gt.efn_max) efn_max=efn
+      if (efn.gt.efn_max) efn_max=efn ! set a new efn_max if a greater one is found
       call vlgvn(efn,elgvn,xjunk,fma,gri_sp)
       xmua(1,i)=fma*da(1,i)/efn
       xmua(2,i)=fma*da(2,i)/efn
@@ -136,14 +139,15 @@ c     of the solvation enthalpy.
       elgvn = clgvn * elgvn
       elgvn_i = clgvn * elgvn_i
 c     write(6,'(/,"Maximum field = ",f10.4,/)') efn_max
-      write(6,1001) ndipole,elgvn, elgvn_i
-
+!------------------------------------------------------------
+      write(6,1001) ndipole,elgvn, elgvn_i ! need to get here
+!-------------------------------------------------------------
       if (iterld. eq. 0) return
 
 c      Calculation of the initial configuration of Langevin dipoles. 
 c      (0-th step of the iterative calculation of dipole-dipole interactions).
 
-      call ef_ld(ndipole,0)
+      da = ef_ld(xw,q,n_reg1,x1,ndipole,0)
 
       elgvna=0.0
       do 20 i=1,ndipole

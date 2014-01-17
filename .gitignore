@@ -4,7 +4,13 @@
 *~
 *.mod
 *.dSYM/*
+*/*.dSYM/*
 main
 cs.arc
 .DS_Store
 cs21
+atom-charges.txt
+atoms.txt
+dipoles.txt
+da.txt
+

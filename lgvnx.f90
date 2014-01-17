@@ -1,5 +1,5 @@
 subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
-  use chemsol, only : ef_ld
+  use chemsol, only : ef_ld,vlgvn_f
   implicit Real*8 (a-h,o-z)
       parameter (mxlgvn=10000)
       parameter (mxatm=500)
@@ -23,10 +23,15 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       real*8 center1(3)
       ! local vars
       integer*2 isd 
+      ! for writing binary data
+      integer :: irec
+
       real*8 elgvn,elgvna
       real*8 fs, gri_sp, efn, fma
       real*8 vdwsur(mxatm)
       character*1 dash(72)
+      real(8), dimension(3) :: vlgvn_result
+      real(8) :: ea = 0.0d0 ! variable for holding ea from vlgvn
       data dash/72*'-'/
 
       elgvn=0.d0 !total lgvn energy
@@ -60,8 +65,33 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
 
 ! --   Get electric field at the positions of the dipoles (da(3,mxlgvn))
 !      call ef_ld(ndipole,1)
-      da = ef_ld(xw,q,n_reg1,xl,ndipole,1)
 
+!      inquire (iolength=irec) xw
+      ! print the solute cartesian coordinates and charge
+      ! open(file="atoms.txt",unit=46,status="replace")
+      ! do i=1,n_reg1
+      !    write(46,*) xw(1,i),xw(2,i),xw(3,i)
+      ! end do
+      ! close(46)
+      ! open(file="atom-charges.txt",unit=46,status="replace")
+      ! do i=1,n_reg1
+      !    write(46,*) q(i)
+      ! end do
+      ! close(46)
+      ! ! print the langevin dipoles cartesian coordinates
+      ! open(file="dipoles.txt",unit=47,status="replace")
+      ! do i=1,ndipole
+      !    write(47,*) xl(1,i),xl(2,i),xl(3,i)
+      ! end do
+      ! close(47)
+      ! ! calculate the coloumbic interactions between points chagers
+      da = ef_ld(xw,q,n_reg1,xl,ndipole,1)
+      ! open(file="da.txt",unit=48,status="replace")
+      ! do i=1,ndipole
+      !    write(48,*) da(1,i),da(2,i),da(3,i)
+      ! end do
+      ! close(48)
+      
       efn_max=-10.0d0
 !      elgvn = 0.d0
       do i = 1,n_reg1
@@ -73,9 +103,14 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       gri_sp=drg_inner
       if(i.gt.n_inner) gri_sp=drg
       if(i.eq.n_inner+1) elgvn_i = elgvn ! save elgvn_i for inner grid ld energies report
+      ! scalar magnitude of the electrostatic of field
       efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
       if (efn.gt.efn_max) efn_max=efn ! set a new efn_max if a greater one is found
-      call vlgvn(efn,elgvn,xjunk,fma,gri_sp)
+      ! call vlgvn(efn,elgvn,xjunk,fma,gri_sp)
+      vlgvn_result = vlgvn_F(efn,gri_sp,clgvn,slgvn)
+      fma = vlgvn_result(1)
+      tds = vlgvn_result(2)
+      elgvn  =  elgvn + vlgvn_result(3)
       xmua(1,i)=fma*da(1,i)/efn
       xmua(2,i)=fma*da(2,i)/efn
       xmua(3,i)=fma*da(3,i)/efn
@@ -152,7 +187,12 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       gri_sp=drg_inner
       if(i.gt.n_inner) gri_sp=drg
       efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
-      call vlgvn(efn,elgvna,dumm,fma,gri_sp)
+      ! call vlgvn(efn,elgvna,dumm,fma,gri_sp)
+      vlgvn_result = vlgvn_F(efn,gri_sp,clgvn,slgvn)
+      fma = vlgvn_result(1)
+      tds = vlgvn_result(2)
+      elgvn  = elgvn + vlgvn_result(3)
+      
 ! --  Dipole moments of point (langevin) dipoles are oriented along
 !     the field from solute for inner grid and outer surface dipoles. 
 !     They are oriented randomly for odd nonsurface outer grid 

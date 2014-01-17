@@ -1,3 +1,4 @@
+module chemsol
   function ef_ld (xw,q,natoms,xl,ndipole,idiel) result (da)
     !    real(8), intent(in) :: xw(3,size(xw))
     !     Electric field at lgvn dipoles is calculated from point charges.
@@ -16,7 +17,7 @@
     !    common /reg1/ xw(3,mxatm),q(mxatm)
     !    common /scrat8/ xl(3,mxlgvn),da(3,mxlgvn)
 
-  ! all we need, in theory, is xl, xw, q
+  ! all we need, in theory, is xl, xw, q, if dynamic array allocation is used
   da = 0.d0
   do j=1,ndipole
      do  i=1,natoms
@@ -26,16 +27,14 @@
         rk = xl(3,j)-xw(3,i)
         r2 = ri*ri + rj*rj + rk*rk
         r1 = dsqrt(r2)
-        ! calculat coloumbic interaction
         r3 = r2 * r1
         if (idiel == 1) then
-           ! ddd - screening factor?
+           ! eq 3 in j. phys.chem.b 1997,101,5585? reported as sqrt(r1+2.0)/1.7d0 !
            ddd = 1.7d0/sqrt(r1+2.0)
            qr = ddd * q(i) / r3
         else if (idiel == 0) then
            qr = q(i) / r3
         end if
-        ! sum up the coloumbic interactions between point charges
         da(1,j) = da(1,j) + qr*ri
         da(2,j) = da(2,j) + qr*rj
         da(3,j) = da(3,j) + qr*rk

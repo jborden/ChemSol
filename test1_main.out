@@ -1,3 +1,4 @@
+ test1.cs                                                                                                                                                                                                                                                        
       ***********************************************************
                                                                  
                              CHEMSOL 2.1                         
@@ -7,6 +8,8 @@
                           Los Angeles, 1999                      
                                                                  
       ***********************************************************
+
+
  Solute                           :      CytN3H+, 631g
  Total charge for gas-phase solute:      1.00
  Total charge for PCM solute      :      1.00

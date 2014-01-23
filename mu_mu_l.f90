@@ -34,7 +34,7 @@ subroutine mu_mu_l (n,step_,tds)
         if(i.gt.n_inner) gri_sp=drg
         ! call vlgvn (efna,xjunka,tds,fma,gri_sp)
 
-        vlgvn_result = vlgvn_F(efna,gri_sp,clgvn,slgvn)
+        vlgvn_result = vlgvn_F(efna,gri_sp,slgvn)
         fma = vlgvn_result(1)
         tds = vlgvn_result(2)
         elgvn  = elgvn + vlgvn_result(3)

@@ -84,7 +84,6 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       !    write(47,*) xl(1,i),xl(2,i),xl(3,i)
       ! end do
       ! close(47)
-      ! ! calculate the coloumbic interactions between points chagers
       da = ef_ld(xw,q,n_reg1,xl,ndipole,1)
       ! open(file="da.txt",unit=48,status="replace")
       ! do i=1,ndipole
@@ -98,67 +97,68 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       vdwsur(i) = 0.d0
       end do
       
-      do 10 i=1,ndipole
-      
-      gri_sp=drg_inner
-      if(i.gt.n_inner) gri_sp=drg
-      if(i.eq.n_inner+1) elgvn_i = elgvn ! save elgvn_i for inner grid ld energies report
-      ! scalar magnitude of the electrostatic of field
-      efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
-      if (efn.gt.efn_max) efn_max=efn ! set a new efn_max if a greater one is found
-      ! call vlgvn(efn,elgvn,xjunk,fma,gri_sp)
-      vlgvn_result = vlgvn_F(efn,gri_sp,clgvn,slgvn)
-      fma = vlgvn_result(1)
-      tds = vlgvn_result(2)
-      elgvn  =  elgvn + vlgvn_result(3)
-      xmua(1,i)=fma*da(1,i)/efn
-      xmua(2,i)=fma*da(2,i)/efn
-      xmua(3,i)=fma*da(3,i)/efn
+      do i=1,ndipole
+
+         gri_sp=drg_inner
+         if(i.gt.n_inner) gri_sp=drg 
+         if(i.eq.n_inner+1) elgvn_i = elgvn ! save elgvn_i for inner grid ld energies report
+
+         efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
+         if (efn.gt.efn_max) efn_max=efn ! set a new efn_max if a greater one is found
+         ! call vlgvn(efn,elgvn,xjunk,fma,gri_sp)
+         vlgvn_result = vlgvn_F(efn,gri_sp,slgvn)
+         fma = vlgvn_result(1)
+         tds = vlgvn_result(2)
+         elgvn  =  elgvn + vlgvn_result(3)
+         xmua(1,i)=fma*da(1,i)/efn
+         xmua(2,i)=fma*da(2,i)/efn
+         xmua(3,i)=fma*da(3,i)/efn
 
 
-! --  Calculate hydrophobic surface
-      if (i.gt.n_inner) goto 10
-      if (rz_vdw(i).le.rzcut) then
+         ! --  Calculate hydrophobic surface
+         if (i.lt.n_inner) then
+            if (rz_vdw(i).le.rzcut) then
 
-! --    Calculate elstat. potential at the grid point
-        epot = 0.d0
-        do k=1,n_reg1
-        rx = xl(1,i) - xw(1,k) 
-        ry = xl(2,i) - xw(2,k) 
-        rz = xl(3,i) - xw(3,k) 
-        rqd = sqrt (rx*rx+ry*ry+rz*rz)
-        epot = epot + q(k)/rqd
-        end do
+               ! --    Calculate elstat. potential at the grid point
+               epot = 0.d0
+               do k=1,n_reg1
+                  rx = xl(1,i) - xw(1,k) 
+                  ry = xl(2,i) - xw(2,k) 
+                  rz = xl(3,i) - xw(3,k) 
+                  rqd = sqrt (rx*rx+ry*ry+rz*rz)
+                  epot = epot + q(k)/rqd
+               end do
 
-! --    Hydrophobic energy - negative surfaces
-!      if (epot.lt.0.d0 .and. epot.gt.-ephil2) then
-!       fs = epot/ephil2 + 1.d0
-!       write(6,'(i5,2f10.5," > - ephil2, fs = ",f10.5)') iz(i),
-!    *  rz_vdw(i), epot, fs
-!      end if
-!     
-       if (epot.lt.0.d0) epot=-epot
-! --    Positive surfaces and the surface for vdw term 
-        if (epot.le.ephil1) then
-         fs=1.0d0
-!        write(6,'(i5,2f10.5," < ephil1, fs = ",f10.5)') iz(i),
-!    *   rz_vdw(i), epot, fs
-        end if
-        if((epot.gt.ephil1).and.(epot.le.ephil2)) then
-         fs=1.d0-((epot-ephil1)/(ephil2-ephil1))*(1.0-sres)
-!        write(6,'(i5,2f10.5," < ephil2, fs = ",f10.5)') iz(i),
-!    *   rz_vdw(i), epot, fs
-         elseif(epot.gt.ephil2) then
-         fs=sres
-!        write(6,'(i5,2f10.5," > ephil2")') i, rz_vdw(i), epot
-        endif
-!      endif
-        atomfs(iz(i)) = atomfs(iz(i))+fs
-        fsurfa(ientro)=fsurfa(ientro)+fs
-        vdwsur(iz(i)) = vdwsur(iz(i)) + 1.d0
-      endif
-      ! #GOTO 10
- 10   continue
+               ! --    Hydrophobic energy - negative surfaces
+               !      if (epot.lt.0.d0 .and. epot.gt.-ephil2) then
+               !       fs = epot/ephil2 + 1.d0
+               !       write(6,'(i5,2f10.5," > - ephil2, fs = ",f10.5)') iz(i),
+               !    *  rz_vdw(i), epot, fs
+               !      end if
+               !     
+               if (epot.lt.0.d0) epot=-epot
+               ! --    Positive surfaces and the surface for vdw term 
+               if (epot.le.ephil1) then
+                  fs=1.0d0
+                  !        write(6,'(i5,2f10.5," < ephil1, fs = ",f10.5)') iz(i),
+                  !    *   rz_vdw(i), epot, fs
+               end if
+               if((epot.gt.ephil1).and.(epot.le.ephil2)) then
+                  fs=1.d0-((epot-ephil1)/(ephil2-ephil1))*(1.0-sres)
+                  !        write(6,'(i5,2f10.5," < ephil2, fs = ",f10.5)') iz(i),
+                  !    *   rz_vdw(i), epot, fs
+               elseif(epot.gt.ephil2) then
+                  fs=sres
+                  !        write(6,'(i5,2f10.5," > ephil2")') i, rz_vdw(i), epot
+               endif
+               !      endif
+               atomfs(iz(i)) = atomfs(iz(i))+fs
+               fsurfa(ientro)=fsurfa(ientro)+fs
+               vdwsur(iz(i)) = vdwsur(iz(i)) + 1.d0
+            endif
+         endif
+         ! #GOTO 10
+      enddo
 
 !     Use atom polarizabilities (vdwc6) to calculate vdW part
 !     of the solvation enthalpy.
@@ -188,7 +188,7 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       if(i.gt.n_inner) gri_sp=drg
       efn=dsqrt(da(1,i)*da(1,i)+da(2,i)*da(2,i)+da(3,i)*da(3,i))
       ! call vlgvn(efn,elgvna,dumm,fma,gri_sp)
-      vlgvn_result = vlgvn_F(efn,gri_sp,clgvn,slgvn)
+      vlgvn_result = vlgvn_F(efn,gri_sp,slgvn)
       fma = vlgvn_result(1)
       tds = vlgvn_result(2)
       elgvn  = elgvn + vlgvn_result(3)

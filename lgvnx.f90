@@ -157,7 +157,6 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
                vdwsur(iz(i)) = vdwsur(iz(i)) + 1.d0
             endif
          endif
-         ! #GOTO 10
       enddo
 
 !     Use atom polarizabilities (vdwc6) to calculate vdW part

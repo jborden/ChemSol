@@ -1,56 +1,53 @@
-c--------------------------------------------------------------------
-
-      subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
-C --  Iterative calculation of langevin dipoles.
-*
+subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
+! --  Iterative calculation of langevin dipoles.
       implicit Real*8 (a-h,o-z)
       parameter (mxatm=500)
       parameter (mxlgvn=10000)
-c     parameter (mxpair3=1800000)
+!     parameter (mxpair3=1800000)
       parameter (mxcenter=50)
       parameter (mxpair2=10000000)
       parameter (mxpair=5000000)
-      common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82),
-     $      n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm)
-     $             ,q_gas(mxatm),q_mp2(mxatm)
+      common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
+           n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
+           q_gas(mxatm),q_mp2(mxatm)
       common /pcefaefb/efa(3,mxlgvn)
       common efal (3,mxlgvn)
       common /pcdipcut/ rdcutl,out_cut
-      common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),
-     :                da(3,mxlgvn)
+      common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn), &
+           da(3,mxlgvn)
       common /pctimes/ ndxp,itl,itp
       integer*2 jp, jp2
-      common /biglist/ ip(0:mxlgvn),jp(mxpair),ip2(0:mxlgvn),
-     $                 jp2(mxpair2),ip3(0:mxlgvn)
+      common /biglist/ ip(0:mxlgvn),jp(mxpair),ip2(0:mxlgvn), &
+           jp2(mxpair2),ip3(0:mxlgvn)
       common /lra/ clgvn, slgvn
 
-c:::  input vars
+!:::  input vars
       real*8 energy
       integer nd
  
-c:::  local vars
+!:::  local vars
       integer i,l,icent,iopen
       real*8 conv2
       real*8 epom(44)
-c     integer*2 jp3(mxpair3)
+!     integer*2 jp3(mxpair3)
       character*1 dash(72)
       data dash/72*'-'/
       data iopen/1/
-c......................................................................
+!......................................................................
       tds = 0.0d0
       write(6,1006) 
-c     write(6,1002) nd
-c     call pairlistw(nd,xd,jp3)
+!     write(6,1002) nd
+!     call pairlistw(nd,xd,jp3)
       call pairlistw(nd,xd)
       write(6,1008)
       conv2=-332.d0*slgvn
       do i=1,10
       epom(i) = 0.d0
       end do
-c --  Relaxation of the langevin dipoles
+! --  Relaxation of the langevin dipoles
       do 40 l=1,itl
 
-c     Dump dipoles into xyz file for viewing by the program xmol
+!     Dump dipoles into xyz file for viewing by the program xmol
       if (.false.) then
       open (50, file='cs_dipoles.xyz')
       nd2plot=0
@@ -63,8 +60,8 @@ c     Dump dipoles into xyz file for viewing by the program xmol
          scale = 25.
          if (i.le.n_inner) scale = 50.
          if (xl(1,i).eq.0.0) then
-         write (50,2007) xl(1,i),xl(2,i), xl(3,i), 
-     $   scale*xmua(1,i),scale*xmua(2,i),scale*xmua(3,i)
+         write (50,2007) xl(1,i),xl(2,i), xl(3,i), &
+              scale*xmua(1,i),scale*xmua(2,i),scale*xmua(3,i)
          endif
       enddo
       end if
@@ -82,12 +79,12 @@ c     Dump dipoles into xyz file for viewing by the program xmol
       enddo
       eita=conv2*eita
       write(6,1013) l-1,eita,eiti,eita-tds
-c     Remember 0th iteration energy (noniterative lgvn energy).
+!     Remember 0th iteration energy (noniterative lgvn energy).
       if (l.eq.1) elgvni=eita
 
-c --  Calculate deviation of the last computed free energy from the average
-c     of previous ni iterations. If this is less than 0.1% langevin
-c     energy is converged. 
+! --  Calculate deviation of the last computed free energy from the average
+!     of previous ni iterations. If this is less than 0.1% langevin
+!     energy is converged. 
       ni=10
       if(l.gt.5) then
         eave=0.d0
@@ -105,21 +102,21 @@ c     energy is converged.
         iconvp = iconvp * iconv
         end do
 
-c --  Alternatively, stop iterations if the minimum of the dG is reached.
-        if(l.gt.16.and.epom(ni).gt.epom(ni-1).and.
-     $  epom(ni-1).gt.epom(ni-2))  iconvp = 1
+! --  Alternatively, stop iterations if the minimum of the dG is reached.
+        if(l.gt.16.and.epom(ni).gt.epom(ni-1).and. &
+             epom(ni-1).gt.epom(ni-2))  iconvp = 1
         if(iconvp.eq.1) then 
-c       write(6,'("Elgvn converged. Average = ",f8.3)') eave
+!       write(6,'("Elgvn converged. Average = ",f8.3)') eave
 ! #GOTO 50
         goto 50
         end if
       end if
 
       call newf_lcut(nd,l)
-c -- In the local reaction field approximation, long-range dipole-dipole
-c    interactions are updated only in the first n steps; the field from
-c    distant dipoles is fixed at its last value afterwards.
-c     if(l.lt.10.or.l.eq.45) call updatelong(nd,l,jp3)
+! -- In the local reaction field approximation, long-range dipole-dipole
+!    interactions are updated only in the first n steps; the field from
+!    distant dipoles is fixed at its last value afterwards.
+!     if(l.lt.10.or.l.eq.45) call updatelong(nd,l,jp3)
       if(l.lt.10.or.l.eq.45) call updatelong(nd,l)
       stepaw=0.2
       if(l.lt.4) stepaw=0.10
@@ -144,11 +141,11 @@ c     if(l.lt.10.or.l.eq.45) call updatelong(nd,l,jp3)
       energy=eita
 
       return
-c....................................................................
+!....................................................................
  1002 format(1x,'Total number of dipoles = ',i8)
  1006 format(/,1x,'Iterative LD calculation for the chosen grid')
- 1008 format(//1x,'Iteration',9x,'Elgvn',5x,'Elgvn_inner',5x,
-     $      'Elgvn-TdS_immob'/)
+ 1008 format(//1x,'Iteration',9x,'Elgvn',5x,'Elgvn_inner',5x, &
+           'Elgvn-TdS_immob'/)
  1013 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3)
  1014 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3//)
-      end
+    end subroutine sci_lgvn

@@ -1,4 +1,5 @@
 subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
+  use chemsol, only : newf_lcut_f,updatelong_f,pairlistw
 ! --  Iterative calculation of langevin dipoles.
       implicit Real*8 (a-h,o-z)
       parameter (mxatm=500)
@@ -20,11 +21,12 @@ subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
       common /biglist/ ip(0:mxlgvn),jp(mxpair),ip2(0:mxlgvn), &
            jp2(mxpair2),ip3(0:mxlgvn)
       common /lra/ clgvn, slgvn
+      common /outer_surf/ isd(mxlgvn)
 
 !:::  input vars
       real*8 energy
       integer nd
- 
+      integer(2) :: isd
 !:::  local vars
       integer i,l,icent,iopen
       real*8 conv2
@@ -38,7 +40,8 @@ subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
       write(6,1006) 
 !     write(6,1002) nd
 !     call pairlistw(nd,xd,jp3)
-      call pairlistw(nd,xd)
+!      call pairlistw(nd,xd)
+      call pairlistw(nd,xd,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
       write(6,1008)
       conv2=-332.d0*slgvn
       do i=1,10
@@ -112,12 +115,16 @@ subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
         end if
       end if
 
-      call newf_lcut(nd,l)
+      !call newf_lcut(nd,l)
+      efa = newf_lcut_f(nd,l,da,ip,jp,xd,xmua)
 ! -- In the local reaction field approximation, long-range dipole-dipole
 !    interactions are updated only in the first n steps; the field from
 !    distant dipoles is fixed at its last value afterwards.
 !     if(l.lt.10.or.l.eq.45) call updatelong(nd,l,jp3)
-      if(l.lt.10.or.l.eq.45) call updatelong(nd,l)
+      if(l.lt.10.or.l.eq.45) then
+         !call updatelong(nd,l)
+         efal = updatelong_f(nd,l,ip2,jp2,xd,xmua)
+      endif
       stepaw=0.2
       if(l.lt.4) stepaw=0.10
       if(l.lt.11) stepaw=0.20

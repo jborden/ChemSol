@@ -1263,7 +1263,7 @@ C     This contribution is added to the field from the solute.
             enddo
          endif
       enddo
-         return
+      return
 
          end
 c--------------------------------------------------------------------

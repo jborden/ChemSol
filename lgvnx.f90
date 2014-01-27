@@ -1,5 +1,5 @@
 subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
-  use chemsol, only : ef_ld,vlgvn_f
+  use chemsol, only : ef_ld,vlgvn_f,ran2
   implicit Real*8 (a-h,o-z)
       parameter (mxlgvn=10000)
       parameter (mxatm=500)

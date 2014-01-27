@@ -6,7 +6,49 @@ module chemsol
   real(8), parameter :: pi = 3.14159d0   ! pi
   real(8), parameter :: e = 2.71828    ! Euler's number
   real(8), parameter :: amu = 1.66d-27 ! The dalton, in kg
+  
+  integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
+  integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
+  integer,parameter  :: mxpair  = 5000000 ! maximum amount of pairs allowed
+
+  integer :: iff = 0 ! a switch that tells ran2 if it has been called or not
   contains
+    real(8) function ran2 (idum)
+      ! implicit Real*8 (a-h,o-z)
+      !     Returns a uniform random numbers between 0.0 and 1.0.
+      !     Set idum to any negative value to initialize or reinitialize
+      !     the sequence with the seed number equal -idum.
+      integer,parameter :: m = 714025, ia = 1366, ic = 150889
+      real(8),parameter :: rm = 1.0 / m
+      
+      ! real(8),intent(in) :: idum
+      integer,intent(inout)   :: idum
+      ! Parameter (m=714025, ia=1366, ic=150889, rm=1.0/m)
+      ! local
+      integer ir(97),iy,j
+      save ir, iy ! the state here must be handled differently
+      ! Data iff /0/
+      if (idum.lt.0.or.iff.eq.0) then
+         iff = 1
+         idum=mod(ic-idum,m)
+         do j=1,97
+            idum=mod(ia*idum+ic,m)
+            ir(j) = idum
+         end do
+         idum=mod(ia*idum+ic,m)
+         iy=idum
+      end if
+      j=1+(97*iy)/m
+      if(j.gt.97.or.j.lt.1) then
+         print*,'Problems with the random number generator, j = ', j
+         stop
+      end if
+      iy=ir(j)
+      ran2=iy*rm
+      idum=mod(ia*idum+ic,m)
+      ir(j) = idum
+      return
+    end function ran2
     real function entropy(mass)
     ! molecular mass 
     real(8), intent(in) :: mass
@@ -34,8 +76,8 @@ module chemsol
   function ef_ld (xw,q,natoms,xl,ndipole,idiel) result (da)
     !    real(8), intent(in) :: xw(3,size(xw))
     !     Electric field at lgvn dipoles is calculated from point charges.
-    integer,parameter :: mxlgvn = 10000 ! this is messy, need dynamic arrays in gen_gridx
-    integer,parameter :: mxatm = 500    ! this is messy, need dynamic array in main.f90 when solute is read in
+    !integer,parameter :: mxlgvn = 10000 ! this is messy, need dynamic arrays in gen_gridx
+    !integer,parameter :: mxatm = 500    ! this is messy, need dynamic array in main.f90 when solute is read in
     real(8),dimension(3,mxatm),intent(in) :: xw
     real(8),dimension(mxatm),intent(in) :: q
     integer,intent(in) :: natoms  ! hopefully, this will be derivable from size(q)
@@ -119,8 +161,8 @@ module chemsol
     return
   end function vlgvn_f
   subroutine pairlistw(nd,dipx,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
-    integer,parameter  :: mxlgvn=10000
-    integer,parameter  :: mxpair=5000000
+    ! integer,parameter  :: mxlgvn=10000
+    ! integer,parameter  :: mxpair=5000000
     integer,parameter  :: mxpair2=10000000
     integer,intent(in) :: nd
     integer,intent(inout) :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn)
@@ -202,8 +244,8 @@ module chemsol
          f8.3,' A cutoff')
   end subroutine pairlistw
   function newf_lcut_f(nd,l,da,ip,jp,xd,xmua) result (efa)
-    integer,parameter  :: mxlgvn = 10000
-    integer,parameter  :: mxpair = 5000000
+    !integer,parameter  :: mxlgvn = 10000
+    ! integer,parameter  :: mxpair = 5000000
     integer,intent(in) :: nd,l,ip(0:mxlgvn)
     integer(2),intent(in) :: jp(mxpair)
     real(8),intent(in) :: da(3,mxlgvn),xd(3,mxlgvn),xmua(3,mxlgvn)
@@ -249,8 +291,8 @@ module chemsol
     return 
   end function newf_lcut_f
   function updatelong_f(nd,l,ip2,jp2,xd,xmua) result (efal)
-    integer,parameter  :: mxlgvn  = 10000
-    integer,parameter  :: mxpair  = 5000000
+    !integer,parameter  :: mxlgvn  = 10000
+    ! integer,parameter  :: mxpair  = 5000000
     integer,parameter  :: mxpair2 = 10000000
     integer,intent(in) :: nd,l,ip2(0:mxlgvn)
     integer(2),intent(in) :: jp2(mxpair2)
@@ -293,7 +335,7 @@ module chemsol
     return
   end function updatelong_f
   subroutine mu_mu_l (n,step_,tds,isd,efa,efal,drg_inner,n_inner,drg,xmua,slgvn)
-    integer,parameter :: mxlgvn=10000
+    !integer,parameter :: mxlgvn=10000
     integer,intent(in) :: n,n_inner
     real(8),intent(in) :: step_,efal(3,mxlgvn),slgvn,drg,drg_inner
     real(8),intent(inout) :: efa(3,mxlgvn),tds,xmua(3,mxlgvn)
@@ -307,6 +349,7 @@ module chemsol
     real(8),dimension(3) :: vlgvn_result
     real(8) :: tds_sum,efna,gri_sp,fma,elgvn
     integer :: i
+
     tds = 0.0d0
     tds_sum=0.0d0
     do i=1,n

@@ -1,4 +1,5 @@
 subroutine ran_shift(i,center1,center2)
+  use chemsol, only : ran2
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)

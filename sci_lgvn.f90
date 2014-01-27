@@ -1,5 +1,5 @@
 subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
-  use chemsol, only : newf_lcut_f,updatelong_f,pairlistw
+  use chemsol, only : newf_lcut_f,updatelong_f,pairlistw,mu_mu_l
 ! --  Iterative calculation of langevin dipoles.
       implicit Real*8 (a-h,o-z)
       parameter (mxatm=500)
@@ -21,11 +21,12 @@ subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
       common /biglist/ ip(0:mxlgvn),jp(mxpair),ip2(0:mxlgvn), &
            jp2(mxpair2),ip3(0:mxlgvn)
       common /lra/ clgvn, slgvn
-      common /outer_surf/ isd(mxlgvn)
-
+      common /outer_surf/ isd(mxlgvn) ! a sin that will have to be rectified!
+      common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner   ! another sin that will have to be rectified
 !:::  input vars
       real*8 energy
       integer nd
+      ! a sin that will have to be rectified!
       integer(2) :: isd
 !:::  local vars
       integer i,l,icent,iopen
@@ -130,7 +131,7 @@ subroutine sci_lgvn(energy,elgvni,tds,nd,icent)
       if(l.lt.11) stepaw=0.20
       if(l.gt.28) stepaw=0.30
       if(l.gt.80) stepaw=0.50
-      call mu_mu_l (nd,stepaw,tds)
+      call mu_mu_l (nd,stepaw,tds,isd,efa,efal,drg_inner,n_inner,drg,xmua,slgvn)
  40   continue
 
       eita=0.d0

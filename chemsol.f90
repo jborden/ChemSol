@@ -292,6 +292,46 @@ module chemsol
     enddo
     return
   end function updatelong_f
-  ! function mu_mu_l (n,step_,tds) result 
-  ! end function mu_mu_l
+  subroutine mu_mu_l (n,step_,tds,isd,efa,efal,drg_inner,n_inner,drg,xmua,slgvn)
+    integer,parameter :: mxlgvn=10000
+    integer,intent(in) :: n,n_inner
+    real(8),intent(in) :: step_,efal(3,mxlgvn),slgvn,drg,drg_inner
+    real(8),intent(inout) :: efa(3,mxlgvn),tds,xmua(3,mxlgvn)
+    integer(2),intent(in) :: isd(mxlgvn)
+    !..................................................................
+    ! -- Dipoles are not updated for outer surface grid points (isd(i)=1,
+    !    surface constrained dipoles). These are initiated in 
+    !    the subroutine lgvnx.
+
+    ! local
+    real(8),dimension(3) :: vlgvn_result
+    real(8) :: tds_sum,efna,gri_sp,fma,elgvn
+    integer :: i
+    tds = 0.0d0
+    tds_sum=0.0d0
+    do i=1,n
+       if(isd(i).eq.0) then
+          efa(1,i)=efa(1,i)+efal(1,i)
+          efa(2,i)=efa(2,i)+efal(2,i)
+          efa(3,i)=efa(3,i)+efal(3,i)
+          efna=efa(1,i)*efa(1,i)+efa(2,i)*efa(2,i)+efa(3,i)*efa(3,i)
+          efna=dsqrt(efna)
+          gri_sp=drg_inner
+          if(i.gt.n_inner) gri_sp=drg
+          vlgvn_result = vlgvn_F(efna,gri_sp,slgvn)
+          fma = vlgvn_result(1)
+          tds = vlgvn_result(2)
+          elgvn  = elgvn + vlgvn_result(3)
+          
+          tds_sum = tds_sum + tds
+          xmua(1,i)=xmua(1,i)+step_*(fma*efa(1,i)/efna-xmua(1,i))
+          xmua(2,i)=xmua(2,i)+step_*(fma*efa(2,i)/efna-xmua(2,i))
+          xmua(3,i)=xmua(3,i)+step_*(fma*efa(3,i)/efna-xmua(3,i))
+       end if
+    end do
+    !     Entropy contribution:
+    tds=tds_sum
+    !     write(6,'("ENTROPY = ",f10.3)') tds
+    return
+  end subroutine mu_mu_l
 end module chemsol

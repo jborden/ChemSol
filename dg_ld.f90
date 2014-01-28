@@ -1,5 +1,5 @@
 subroutine dg_ld (iterld,iprint)
-  use chemsol, only : ran_shift,vatom_f
+  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)
@@ -19,6 +19,7 @@ subroutine dg_ld (iterld,iprint)
 
   common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner ! this sin will have to be rectified later
   common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),da(3,mxlgvn) ! another egregious sin
+  common /volume/ nvol(mxcenter) ! yuck
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -27,7 +28,7 @@ subroutine dg_ld (iterld,iprint)
   integer i,j
   real*8 center_new(3)
   real(8) :: oshift(3*mxcenter) ! I would rather this just get passed around as a variable than 'save'd in ran_shift
-  real(8) :: vatom_result(2)
+  real(8) :: vatom_result(2),elgvn_ave_result(4)
   character*1 dash(72)
   data dash/72*'-'/
   !.......................................................................
@@ -85,7 +86,15 @@ subroutine dg_ld (iterld,iprint)
   elgvn = esum/dble(ndxp)
   evqdq = - evqdq/dble(ndxp)
   ecor  = ecor/dble(ndxp)
-  call elgvn_ave(iterld,ndxp)
+  !call elgvn_ave(iterld,ndxp)
+  !call elgvn_ave(iterld,ndxp,temp_elgvn,evdwl,fsurfa,phobsl,tdsl,nvol,evdw,ephob,etds,tds0,evqdq,elgwa)
+  elgvn_ave_result = elgvn_ave_f(iterld,ndxp,temp_elgvn,evdwl,fsurfa,phobsl,tdsl,nvol,tds0,evqdq)
+  evdw  = elgvn_ave_result(1)
+  ephob = elgvn_ave_result(2)
+  etds  = elgvn_ave_result(3)
+  if (iterld.eq.1) elgwa = elgvn_ave_result(4) ! was originally in elgvn_ave
+  ! tds0  = elgvn_ave_result(4)
+  ! elgwa = elgvn_ave_result(5)
   call vbornx(ndipole,ebw,center_new)
 
   return

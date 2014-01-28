@@ -10,7 +10,7 @@ module chemsol
   integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
   integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
   integer,parameter  :: mxpair  = 5000000 ! maximum amount of pairs allowed
-
+  integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
   integer :: iff = 0 ! a switch that tells ran2 if it has been called or not, global state
   contains
     real(8) function ran2 (idum)
@@ -74,9 +74,6 @@ module chemsol
     return
   end function entropy
   subroutine ran_shift(i,center1,center2,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
-    ! implicit Real*8 (a-h,o-z)
-    integer,parameter :: mxcenter = 50
-    !PARAMETER (MXATM=500)
     integer,intent(in) :: i,ndxp
     real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3)
     ! this is a good candidate for a function as these may all be packed and unpacked
@@ -527,4 +524,100 @@ module chemsol
          '       ',f9.2,2x,'kcal/mol')
 
   end function vatom_f
+  function elgvn_ave_f(iterld,ncenter,temp_elgvn,evdwl,fsurfa,phobsl,tdsl,nvol,tds0,evqdq) result (elgvn_ave_result)
+    ! implicit Real*8 (a-h,o-z)
+    ! parameter (mxcenter=50)
+    ! common /pcresult/ elgwa,elgvn,ebw,erelax,evdw,evqdq,ecor
+    ! common/surf/ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
+    ! common /pcsav_center/ temp_center(mxcenter,3),temp_elgvn(mxcenter)
+    ! common /vdwtds/ vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
+    ! common /volume/ nvol(mxcenter)
+
+    ! character*1 dash(72)
+    ! data dash/72*'-'/
+    !...................................................................
+    integer,intent(in) :: iterld,ncenter,nvol(mxcenter)
+    real(8),intent(in) :: temp_elgvn(mxcenter),evdwl(mxcenter),fsurfa(mxcenter),phobsl
+    real(8),intent(in) :: tdsl(mxcenter),evqdq,tds0
+    !real(8),intent(inout) :: evdw,ephob,etds,tds0,elgwa
+    real(8) :: elgvn_ave_result(4)
+    integer :: i,j,jj,nlowest
+    real(8) :: eav,eboltz,enorm,temper,elowest,wlowest,expe
+    real(8) :: sum_vdwl,sum_phob,sum_tds,sum_surf,sum_vol,ave_surf,vol
+    eav=0.d0
+    eboltz=0.d0
+    enorm=0.d0
+    write(6,1000) 
+    temper=300.d0 ! odd, thought this was 289.15K!
+
+    wlowest=10000.d0
+    do  jj=1,ncenter
+       if(temp_elgvn(jj).lt.wlowest) then
+          wlowest=temp_elgvn(jj)
+          nlowest=jj
+       endif
+    end do
+
+    elowest=temp_elgvn(nlowest)
+    do  i=1,ncenter
+       write(6,1001) i,temp_elgvn(i)
+       eav=eav+temp_elgvn(i)/dble(ncenter)
+       expe=dexp(-(temp_elgvn(i)-elowest)/0.002d0/temper)
+       eboltz=eboltz+temp_elgvn(i)*expe
+       enorm=enorm+expe
+    end do
+
+    eboltz=eboltz/enorm
+    write(6,1002) elowest,eav,eboltz,temper
+
+    sum_vdwl =0.0
+    sum_phob =0.0
+    sum_tds  =0.0
+    sum_surf =0.0
+    sum_vol = 0.0
+    do j=1,ncenter
+       sum_vdwl = sum_vdwl + evdwl(j)
+       sum_surf = sum_surf + fsurfa(j)
+       sum_phob = sum_phob+phobsl*fsurfa(j)
+       sum_tds = sum_tds + tdsl(j)
+       sum_vol = sum_vol + dble(nvol(j))
+    enddo
+    ave_surf = sum_surf/dble(ncenter)
+    elgvn_ave_result(1) = sum_vdwl/dble(ncenter)
+    elgvn_ave_result(2) = sum_phob/dble(ncenter)
+    elgvn_ave_result(3) = sum_tds/dble(ncenter)
+    vol = sum_vol/dble(ncenter)
+
+
+    ! --  Add solute free-volume entropy and hydrophobic entropy:
+    write(6,'(/," Contributions to -TdS (kcal/mol)")' )
+    write(6,'('' Change in free-volume:  '',5x,f10.3)')  tds0
+    write(6,'('' Hydrophobic          :  '',5x,f10.3)')  elgvn_ave_result(2)
+    write(6,'('' Dipolar saturation   :  '',5x,f10.3)')  -elgvn_ave_result(3)
+
+    !     write(6,'(/,''Solute volume (A**3):  '',f10.3)') vol 
+
+    elgvn_ave_result(3) = tds0 + elgvn_ave_result(2) - elgvn_ave_result(3)
+
+    ! there is no explicit argument for print given, thus below is commented'
+    ! if (iprint.eq.1) then
+    !    write(6,'(/,''Average VDW energy:            '',f10.3)') evdw
+    !    write(6,'(''Average -TdS (kcal/mol):       '',f10.3)') etds
+    !    write(6,'(''Average solvation entropy (eu):'',f10.3)') &
+    !         -1000.d0*etds/temper
+    !    write(6,'(''Average relaxation energy:     '',f10.3)') evqdq
+    ! end if
+
+    elgvn_ave_result(4) = eav
+    ! if (iterld.eq.1) elgwa = eav  moved to dg_ld 
+    !....................................................................
+1000 format(1x,' Final LD energies for different grids'// &
+         '                    Elgvn     '/)
+1001 format(1x,i10,2x,f10.3)
+1002 format(//' lowest energy        --->  ',f10.3/ &
+         ' mean energy          --->  ',f10.3/ &
+         ' boltzmann <energies> --->  ',f10.3/ &
+         ' for temperature      --->  ',f10.1,' K'/)
+    return
+  end function elgvn_ave_f
 end module chemsol

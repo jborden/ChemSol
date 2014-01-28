@@ -439,4 +439,92 @@ module chemsol
     !     write(6,'("ENTROPY = ",f10.3)') tds
     return
   end subroutine mu_mu_l
+  function vatom_f (ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn) result (vatom_result)
+    !implicit Real*8 (a-h,o-z)
+    !parameter (mxlgvn=10000)
+    !parameter (mxatm=500)
+    ! common /pcgrid/ drg,rg,dxp0(3), &
+    !      rg_inner,drg_inner
+    ! common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
+    !      n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
+    !      q_gas(mxatm),q_mp2(mxatm)
+    ! common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn), &
+    !      da(3,mxlgvn)
+    ! common /lra/ clgvn, slgvn
+    ! character*1 dash(72)
+    ! dimension vq(mxatm)
+    ! dimension rl(3)
+    integer,intent(in)    :: ndipole,iterld,iprint,n_reg1
+    real(8),intent(in)    :: xl(3,mxlgvn),xw(3,mxatm),xmua(3,mxlgvn),q_gas(mxatm),q(mxatm),q_mp2(mxatm),slgvn,clgvn
+    !real(8),intent(inout) :: cor,vqdq
+    integer :: i,j,k
+    real(8) :: vqq,vq(mxatm),r1,r2,sp,rl(3),dq_gas,dq_mp2,vatom_result(2)
+    
+    ! data dash/72*'-'/
+    ! if (iprint.eq.1) then
+    !    write(6,201) dash
+    !    write(6,202) ! there doesn't seem to be anything here, where there should be
+    ! end if
+
+    !      calculates potential from Langevin dipoles
+    !
+    !                 ->  ->    3
+    !      Vq = 332 * mu * r / r
+    !
+    vqq = 0.d0
+    vatom_result(1) = 0.d0
+    vatom_result(2) = 0.0
+    do j=1,n_reg1
+       vq(j)=0.0d0
+       do i=1,ndipole
+          r2=0.0d0
+          sp=0.0d0
+          do k=1,3
+             rl(k)=-xl(k,i)+xw(k,j)
+             sp=sp+rl(k)*xmua(k,i)
+             r2=r2+rl(k)**2
+          end do
+          r1=dsqrt(r2)
+
+          !     As a distance dependent field is used in noniterative LD calculation
+          !     Vq must be scaled by 1.7d0/dsqrt(rx+2.0d0)
+          if (iterld.eq.1) then
+             vq(j)=vq(j)+332*sp/(r2*r1)
+          else
+             vq(j)=vq(j)+332*(1.7d0/dsqrt(r1+2.0D0))*sp/(r2*r1)
+          end if
+       end do
+       dq_gas = q_gas(j) - q(j)
+       dq_mp2 = q_mp2(j) - q(j)
+       ! not doing this as it requires additional variables to be added
+       ! if need, than the zan argument will be passed to the function
+       ! if (iprint.eq.1) write(6,300) j, zan(j), q(j), vq(j), &
+       !      vq(j)*q(j), vq(j)*dq_gas, vq(j)*dq_mp2
+       vqq = vqq + vq(j)*q(j)
+       vatom_result(1) = vatom_result(1) + vq(j)*dq_gas
+       vatom_result(2) = vatom_result(2) + vq(j)*dq_mp2
+    end do
+
+    vqq = slgvn*vqq
+    if(iterld.eq.0) vqq = clgvn*vqq
+    vatom_result(1) = 0.5d0*vatom_result(1)
+    if(iterld.eq.0) vatom_result(1) = 0.8*vatom_result(1)
+    if (iprint.eq.1) then
+       write(6,400) vqq
+       write(6,500) vatom_result(1)
+       write(6,600) vatom_result(2)
+    end if
+
+201 format(1x,72a1/,' Potentials at solute atoms [kcal/mol]',/)
+202 format(2x,'Atom #',2x,'Type',2x,'Charge',6x,'Vq     ', &
+         2x,'Vq*Q',2x,'Vq*dQ_pcm',2x,'Vq*dQ_mp2')
+300 format(2x,i5,3x,f4.1,2x,f5.2,1x,4(2x,f7.1))
+400 format(/,'Langevin energy calculated from potential at solute', &
+         ' atoms:',3x,f9.2,2x,'kcal/mol')
+500 format('Solute relaxation energy calculated from PCM charges:', &
+         '       ',f9.2,2x,'kcal/mol')
+600 format('Correction for electron correlation effects (dG_cor):', &
+         '       ',f9.2,2x,'kcal/mol')
+
+  end function vatom_f
 end module chemsol

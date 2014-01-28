@@ -1,9 +1,10 @@
 subroutine dg_ld (iterld,iprint)
-  use chemsol, only : ran_shift
+  use chemsol, only : ran_shift,vatom_f
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)
   PARAMETER (MXATM=500)
+  parameter (mxlgvn=10000)
   common /aname/ atom(mxatm),molname,ssname
   common /pctimes/ ndxp,itl,itp
   common /pcgmcntr/ pcenter(3)
@@ -17,6 +18,7 @@ subroutine dg_ld (iterld,iprint)
   common /atom_fs/ atomfs(mxatm)
 
   common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner ! this sin will have to be rectified later
+  common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),da(3,mxlgvn) ! another egregious sin
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -25,6 +27,7 @@ subroutine dg_ld (iterld,iprint)
   integer i,j
   real*8 center_new(3)
   real(8) :: oshift(3*mxcenter) ! I would rather this just get passed around as a variable than 'save'd in ran_shift
+  real(8) :: vatom_result(2)
   character*1 dash(72)
   data dash/72*'-'/
   !.......................................................................
@@ -71,9 +74,12 @@ subroutine dg_ld (iterld,iprint)
      if (iterld.eq.0) write(6,105) elgvn,evdwl(i),tdsw_a,-tds+tdsw_a
      write(6,102) dash
 
-     call vatom (cor,vqdq,ndipole,iterld,iprint)
-     evqdq = evqdq + vqdq
-     ecor = ecor + cor
+     !call vatom (cor,vqdq,ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
+     vatom_result = vatom_f(ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
+     !evqdq = evqdq + vqdq
+     evqdq = evqdq + vatom_result(1)
+     !ecor = ecor + cor
+     ecor = ecor + vatom_result(2)
   end do
 
   elgvn = esum/dble(ndxp)

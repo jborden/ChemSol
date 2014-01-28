@@ -11,7 +11,7 @@ module chemsol
   integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
   integer,parameter  :: mxpair  = 5000000 ! maximum amount of pairs allowed
 
-  integer :: iff = 0 ! a switch that tells ran2 if it has been called or not
+  integer :: iff = 0 ! a switch that tells ran2 if it has been called or not, global state
   contains
     real(8) function ran2 (idum)
       ! implicit Real*8 (a-h,o-z)
@@ -26,7 +26,7 @@ module chemsol
       ! Parameter (m=714025, ia=1366, ic=150889, rm=1.0/m)
       ! local
       integer ir(97),iy,j
-      save ir, iy ! the state here must be handled differently
+      save ir, iy ! functions should not have side effects!
       ! Data iff /0/
       if (idum.lt.0.or.iff.eq.0) then
          iff = 1
@@ -73,6 +73,68 @@ module chemsol
     entropy = T*S/(4.18d0*1000.d0)
     return
   end function entropy
+  subroutine ran_shift(i,center1,center2,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+    ! implicit Real*8 (a-h,o-z)
+    integer,parameter :: mxcenter = 50
+    !PARAMETER (MXATM=500)
+    integer,intent(in) :: i,ndxp
+    real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3)
+    ! this is a good candidate for a function as these may all be packed and unpacked
+    ! into one big array
+    real(8),intent(inout) :: center2(3),temp_center(mxcenter,3),oshift(3*mxcenter)
+    integer :: iseed,idum,dumm,kk
+    real(8) :: fact,dxp(3)
+    ! common /pctimes/ ndxp,itl,itp
+    ! common /pcgrid/ drg,rg,dxp0(3),&
+    !      rg_inner,drg_inner
+    ! common /pcsav_center/ temp_center(mxcenter,3),temp_elgvn(mxcenter)
+    ! dimension oshift(3*mxcenter)
+    ! dimension dxp(3), center2(3), center1(3)
+    !save oshift ! don't see why this is needed
+
+    ! --   Initialize the random number generator and
+    !      generate random origin shifts for ndxp grids.
+    if (i.eq.1) then
+       iseed = -931
+       idum = 1
+       dumm = ran2(iseed)
+       do kk = 1, 3*ndxp
+          oshift(kk) = ran2 (idum)
+       end do
+    end if
+
+    fact=drg_inner
+    if(rg_inner.eq.0.d0) fact=drg
+    if(i.eq.1)fact=0.0d0
+    dxp(1)=fact*(1.d0-2.d0*oshift(3*i-2))
+    dxp(2)=fact*(1.d0-2.d0*oshift(3*i-1))
+    dxp(3)=fact*(1.d0-2.d0*oshift(3*i))
+
+    if(i.ne.1)then
+       center2(1)=center1(1)+dxp(1)+dxp0(1)
+       center2(2)=center1(2)+dxp(2)+dxp0(2)
+       center2(3)=center1(3)+dxp(3)+dxp0(3)
+    else
+       center2(1)=center1(1)+dxp0(1)
+       center2(2)=center1(2)+dxp0(2)
+       center2(3)=center1(3)+dxp0(3)
+    endif
+
+    temp_center(i,1)=center2(1)
+    temp_center(i,2)=center2(2)
+    temp_center(i,3)=center2(3)
+
+    !      write(6,100) center1, dxp0, dxp, center2
+    write(6,100) center2
+
+    return
+    !......................................................................
+100 format(/ &
+                                !    s ' original grid origin  ',3f9.3/
+                                !    s ' original origin shift ',3f9.3/
+                                !    s ' random origin shift   ',3f9.3/
+         ' Grid origin            ',3f9.3)
+  end subroutine ran_shift
   function ef_ld (xw,q,natoms,xl,ndipole,idiel) result (da)
     !    real(8), intent(in) :: xw(3,size(xw))
     !     Electric field at lgvn dipoles is calculated from point charges.

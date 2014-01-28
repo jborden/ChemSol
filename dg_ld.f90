@@ -1,4 +1,5 @@
 subroutine dg_ld (iterld,iprint)
+  use chemsol, only : ran_shift
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)
@@ -14,6 +15,8 @@ subroutine dg_ld (iterld,iprint)
   common /pcsav_center/ temp_center(mxcenter,3),temp_elgvn(mxcenter)
   common /vdwtds/ vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
   common /atom_fs/ atomfs(mxatm)
+
+  common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner ! this sin will have to be rectified later
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -21,6 +24,7 @@ subroutine dg_ld (iterld,iprint)
   !:::  local vars
   integer i,j
   real*8 center_new(3)
+  real(8) :: oshift(3*mxcenter) ! I would rather this just get passed around as a variable than 'save'd in ran_shift
   character*1 dash(72)
   data dash/72*'-'/
   !.......................................................................
@@ -38,7 +42,7 @@ subroutine dg_ld (iterld,iprint)
   !      ecor.......correction for electron correlation effects         
 
   do i=1,ndxp
-     call ran_shift(i,pcenter,center_new)
+     call ran_shift(i,pcenter,center_new,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
      !        Set grid origin for the printout of dipoles into an xmol input file.
      !        center_new(1)=0.0
      !        center_new(2)=0.0

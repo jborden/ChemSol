@@ -1,5 +1,5 @@
 subroutine dg_ld (iterld,iprint)
-  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f
+  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f,vbornx_f
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)
@@ -20,6 +20,7 @@ subroutine dg_ld (iterld,iprint)
   common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner ! this sin will have to be rectified later
   common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),da(3,mxlgvn) ! another egregious sin
   common /volume/ nvol(mxcenter) ! yuck
+  common /born/ rg_reg1, rgim    ! more nastiness
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -28,7 +29,7 @@ subroutine dg_ld (iterld,iprint)
   integer i,j
   real*8 center_new(3)
   real(8) :: oshift(3*mxcenter) ! I would rather this just get passed around as a variable than 'save'd in ran_shift
-  real(8) :: vatom_result(2),elgvn_ave_result(4)
+  real(8) :: vatom_result(2),elgvn_ave_result(4),vbornx_result
   character*1 dash(72)
   data dash/72*'-'/
   !.......................................................................
@@ -95,7 +96,11 @@ subroutine dg_ld (iterld,iprint)
   if (iterld.eq.1) elgwa = elgvn_ave_result(4) ! was originally in elgvn_ave
   ! tds0  = elgvn_ave_result(4)
   ! elgwa = elgvn_ave_result(5)
-  call vbornx(ndipole,ebw,center_new)
+  !call vbornx(ndipole,ebw,center_new)
+  !call vbornx(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
+  vbornx_result = vbornx_f(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
+  ebw = vbornx_result
+  
 
   return
   !.......................................................................

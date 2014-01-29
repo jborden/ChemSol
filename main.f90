@@ -156,7 +156,7 @@ program main
 !     open input file for atom input
 !     call getenv('SOLVINP',fname)
       call getarg(2,input_file_name)
-      write (*,*) input_file_name
+!      write (*,*) input_file_name
       open (45,file=input_file_name)
       read (45,'(a13)') molname
       read (45,*) n_reg1, ngeom
@@ -254,6 +254,7 @@ program main
            6x "***********************************************************"/)
 
       write (6,55)
+      write (*,*)
       write (6,'(/" Solute                           : ",5x,a13)') molname
       write (6,'(" Total charge for gas-phase solute: ",f9.2)') qsum1
       write (6,'(" Total charge for PCM solute      : ",f9.2)') qsum2

@@ -1,6 +1,6 @@
 FC = gfortran
 FCFLAGS = -g
-objects = BLOCKDATA1.o chemsol.o dg_ld.o gen_gridx.o lgvnx.o readopt.o sci_lgvn.o solvout.o vbornx.o
+objects = BLOCKDATA1.o chemsol.o dg_ld.o gen_gridx.o lgvnx.o readopt.o sci_lgvn.o solvout.o
 
 main: $(objects)
 	$(FC) $(FCFLAGS) -fdump-core -o main main.f90 $(objects)

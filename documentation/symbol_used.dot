@@ -1,0 +1,49 @@
+digraph f77tof90symbolused {
+	
+node [shape=record];
+start [shape=plaintext];
+start [label="start\n (assumes labeled do loops/continue statements have been translated to do/enddo loops)\n(assumes all symbols that are assigned a value have been handled previously)"];
+symbol_search [label="Search for symbol that is not the left operand of an assignment and store as 'symbol'"];
+already_reassigned [label="Has 'symbol' already been reassigned?"];
+do_not_reassign [label="Do not reassign 'symbol'"];
+argument_within_scope [label="Is 'symbol' an argument to the fn or sub that encloses the current scope?"];
+intent_in [label="Use intent(in) for type assignment"];
+find_associated_symbol_type [label="Find the symbol,'arg', used as an argument when the fn or sub is called\n that is associated with current 'symbol'."];
+substitute_arg_for_symbol [label="Substitute the symbol 'arg' for 'symbol'.\n The current scope is that of 'arg'.\n The type determined for 'arg' will used for 'symbol'"];
+in_common_block [label="Is 'symbol' in a common block?"];
+root_program   [label="Is the current scope the main or root program?"];
+explicitly_assign_common_block [label="Assign type based on next step.\n Common blocks in the main or root program will be removed at a later time"];
+assigned_implicitly [label="Is there an assigned implicit definition that matches 'symbol'?"];
+use_implicit_type [label="Use implicit type for explicit type assignment"];
+matches_intrinsic_typing [label="Does 'symbol' match intrinsic implicit definitions?\n (if it begins with i,j,k,l,m,n it is an implicit integer\n if it begins with any other letter it is an implicit real)"];
+assign_intrinsic_explicity [label="Assign 'symbol' the corresponding intrinsic implicit defintion explicitly"];
+assigned_explicitly [label="Is 'symbol' assigned an explicit type?"];
+use_explicit_type [label="Use explicit type.\n Remove symbol from current type definition"];
+move_common_block [label="Copy common block declaration with 'symbol'\n to all parents who calls fn or sub if entry does not already exist.\n Remove common block line from current scope"];
+add_symbol_as_argument [label="Add 'symbol' as last argument of current fn or sub."];
+modify_calling_statement [label="Change all calls to fn or sub by adding 'symbol' to the end of argument list"];
+		    
+start -> symbol_search;
+symbol_search -> already_reassigned;
+already_reassigned -> argument_within_scope [label = "no"];
+already_reassigned -> do_not_reassign [label="yes"];
+intent_in -> find_associated_symbol_type;
+find_associated_symbol_type -> substitute_arg_for_symbol;
+substitute_arg_for_symbol -> argument_within_scope;
+argument_within_scope -> in_common_block [label = "no"];
+argument_within_scope -> intent_in [label = "yes"];
+in_common_block -> assigned_explicitly [label = "no"];
+assigned_implicitly -> use_implicit_type [label = "yes"];
+assigned_implicitly -> matches_intrinsic_typing [label = "no"];
+matches_intrinsic_typing -> assign_intrinsic_explicity [label = "yes"];
+assigned_explicitly -> use_explicit_type [label="yes"];
+assigned_explicitly -> assigned_implicitly [label="no"];
+in_common_block -> root_program [label="yes"];
+explicitly_assign_common_block -> assigned_explicitly;
+root_program -> add_symbol_as_argument [label="no"];
+root_program -> explicitly_assign_common_block [label="yes"];
+add_symbol_as_argument -> modify_calling_statement;
+modify_calling_statement -> move_common_block;
+move_common_block -> intent_in;
+
+}

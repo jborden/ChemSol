@@ -1,10 +1,11 @@
 subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
-  use chemsol, only : ef_ld,vlgvn_f,ran2
+  use chemsol, only : ef_ld,vlgvn_f,ran2,gen_gridx
   implicit Real*8 (a-h,o-z)
       parameter (mxlgvn=10000)
       parameter (mxatm=500)
       parameter (mxcenter=50)
       PARAMETER (ONE=1.0d0, ZERO=0.d0)
+      common /aname/ atom(mxatm),molname,ssname ! another sin
       common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
            n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
            q_gas(mxatm),q_mp2(mxatm)
@@ -18,7 +19,11 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       common /atom_fs/ atomfs(mxatm) 
       common /outer_surf/ isd (mxlgvn)
       common /lra/ clgvn, slgvn
-
+      common /volume/ nvol(mxcenter) ! a sin
+      common /born/ rg_reg1, rgim    ! another sin
+      character(8) :: atom     ! these must be manually declared in order for the 
+      character(13) :: molname ! common blocks to align
+      character(4)  :: ssname  ! correctly
       !  input vars
       real*8 center1(3)
       ! local vars
@@ -47,7 +52,8 @@ subroutine lgvnx(center1,elgvn,eqm,ndipole,ientro,iterld,iprint)
       tds = 0.0d0               ! initialize tds to 0, should be done in lgvnx
       ! after this is called, ndipole is set
       ! n_inner = 0 before call, 741 after call
-      call gen_gridx(center1,ndipole,ientro,0,iprint)
+      call gen_gridx(center1,ndipole,ientro,0,iprint,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
+           vdwc6,vdwsl,atom,evdwl,rz1,iz,rz_vdw,q)
 
 ! --   Cartesian coordinates of point dipoles {Angstrom} are stored
 !      (it is unclear at present why 2 different variables (xl, xd)

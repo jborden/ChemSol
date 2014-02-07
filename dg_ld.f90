@@ -1,5 +1,5 @@
 subroutine dg_ld (iterld,iprint)
-  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f,vbornx_f
+  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f,vbornx_f,lgvnx
   implicit Real*8 (a-h,o-z)
 
   parameter (mxcenter=50)
@@ -21,6 +21,10 @@ subroutine dg_ld (iterld,iprint)
   common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),da(3,mxlgvn) ! another egregious sin
   common /volume/ nvol(mxcenter) ! yuck
   common /born/ rg_reg1, rgim    ! more nastiness
+  common/scrat5/  rz1(mxlgvn),rz_vdw(mxlgvn), iz(mxlgvn) ! another sin
+  common /lra/ clgvn, slgvn !another sin
+  common /outer_surf/ isd (mxlgvn) ! another sin
+  integer(2) :: isd ! must be explicitly declared an int2
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -52,7 +56,9 @@ subroutine dg_ld (iterld,iprint)
      !        center_new(1)=0.0
      !        center_new(2)=0.0
      !        center_new(3)=0.0
-     call lgvnx(center_new,elgvn,eqm,ndipole,i,iterld,iprint)
+     !call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner,rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi)
+     call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
+       rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
      esum = esum + elgvn
 
      if (iterld.eq.1) then
@@ -100,7 +106,7 @@ subroutine dg_ld (iterld,iprint)
   !call vbornx(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
   vbornx_result = vbornx_f(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
   ebw = vbornx_result
-  
+
 
   return
   !.......................................................................

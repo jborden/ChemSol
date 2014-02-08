@@ -1,7 +1,8 @@
 subroutine dg_ld (iterld,iprint)
-  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f,vbornx_f,lgvnx
+  use chemsol, only : ran_shift,vatom_f,elgvn_ave_f,vbornx_f,lgvnx,sci_lgvn
   implicit Real*8 (a-h,o-z)
-
+  parameter (mxpair=5000000)
+  parameter (mxpair2=10000000)
   parameter (mxcenter=50)
   PARAMETER (MXATM=500)
   parameter (mxlgvn=10000)
@@ -24,7 +25,12 @@ subroutine dg_ld (iterld,iprint)
   common/scrat5/  rz1(mxlgvn),rz_vdw(mxlgvn), iz(mxlgvn) ! another sin
   common /lra/ clgvn, slgvn !another sin
   common /outer_surf/ isd (mxlgvn) ! another sin
-  integer(2) :: isd ! must be explicitly declared an int2
+  common efal (3,mxlgvn) ! another sin
+  common /biglist/ ip(0:mxlgvn),jp(mxpair),ip2(0:mxlgvn), &
+       jp2(mxpair2),ip3(0:mxlgvn) ! another sin
+  common /pcdipcut/ rdcutl,out_cut ! another sin
+  common /pcefaefb/efa(3,mxlgvn) ! another sin
+  integer(2) :: isd,jp,jp2 ! must be explicitly declared an int2
   character*8 atom
   character*13 molname
   character*4 ssname
@@ -62,7 +68,8 @@ subroutine dg_ld (iterld,iprint)
      esum = esum + elgvn
 
      if (iterld.eq.1) then
-        call sci_lgvn(elgwa,elgvni,tds,ndipole,i)
+        call sci_lgvn(elgwa,elgvni,tds,ndipole,i,itl,xl,efa,efal,drg,drg_inner,ip,ip2,ip3,isd,jp,jp2,n_inner, &
+             out_cut,rdcutl,slgvn,xd,xmua,da)
         temp_elgvn(i)=elgwa
         tdsl(i) = tds
      else

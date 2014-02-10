@@ -840,7 +840,7 @@ contains
        dq_gas = q_gas(j) - q(j)
        dq_mp2 = q_mp2(j) - q(j)
        ! not doing this as it requires additional variables to be added
-       ! if need, than the zan argument will be passed to the function
+       ! if needed, than the zan argument will be passed to the function
        ! if (iprint.eq.1) write(6,300) j, zan(j), q(j), vq(j), &
        !      vq(j)*q(j), vq(j)*dq_gas, vq(j)*dq_mp2
        vqq = vqq + vq(j)*q(j)
@@ -1381,7 +1381,7 @@ contains
        eita=conv2*eita
        write(6,1014) l-1,eita,eiti,eita-tds
     end if
-    !50   continue
+    !50   continue*
     energy=eita
 
     return
@@ -1393,5 +1393,102 @@ contains
 1013 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3)
 1014 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3//)
   end subroutine sci_lgvn
+  subroutine dg_ld (iterld,iprint,evqdq,ecor,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, &
+       pcenter,phobsl,q,q_gas,q_mp2,rg,rg_inner,rg_reg1,rgim,rpi, &
+       rzcut,slgvn,tds0,vdwc6,vdwsl,xw,atom,n_reg1, &
+       drg,drg_inner,rdcutl,out_cut,itl)
+    real(8),intent(inout) :: evqdq,ecor,elgwa,elgvn,evdw,ephob,etds,ebw
+    real(8),intent(in) :: dxp0(3),ephil1,ephil2,clgvn,pcenter(3),q(mxatm),q_gas(mxatm),q_mp2(mxatm)
+    real(8),intent(in) :: rg,rg_inner,rg_reg1,phobsl,rgim,rpi(mxatm),rzcut,slgvn,vdwc6(82),vdwsl
+    real(8),intent(in) :: xw(3,mxatm),drg,drg_inner,rdcutl,out_cut,tds0
+    integer,intent(in) :: iterld,iprint,ndxp,iacw(mxatm),n_reg1,itl
+    character(8),intent(in) :: atom(mxatm)
+    real(8) :: esum,atomfs(mxatm),temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
+         center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
+    real(8) :: oshift(3*mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),tds,temp_center(mxcenter,3)
+    real(8) :: vbornx_result
+    real(8) :: xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
+    integer :: i,j,iz(mxlgvn),n_inner,ndipole
+    integer :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn),nvol(mxcenter)
+    integer(2) :: isd(mxlgvn),jp(mxpair),jp2(mxpair2)
+    esum = 0.d0
+    evqdq = 0.d0
+    ecor=0.d0
+    do i=1,n_reg1
+       atomfs(i)=0.0d0
+    end do
+
+    !      elgvn.......noniterative lgvn energy (using distance-dependent dielectric)
+    !      elgvni.....lgvn energy from the 0-th iteration
+    !      elgwa......iterative lgvn energy 
+    !      evqdq......solute relaxation energy calculated from PCM charges
+    !      ecor.......correction for electron correlation effects         
+
+    do i=1,ndxp
+       call ran_shift(i,pcenter,center_new,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+       !        Set grid origin for the printout of dipoles into an xmol input file.
+       !        center_new(1)=0.0
+       !        center_new(2)=0.0
+       !        center_new(3)=0.0
+       !call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner,rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi)
+       call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
+            rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
+       esum = esum + elgvn
+
+       if (iterld.eq.1) then
+          call sci_lgvn(elgwa,elgvni,tds,ndipole,i,itl,xl,efa,efal,drg,drg_inner,ip,ip2,ip3,isd,jp,jp2,n_inner, &
+               out_cut,rdcutl,slgvn,xd,xmua,da)
+          temp_elgvn(i)=elgwa
+          tdsl(i) = tds
+       else
+          elgwa= 0.d0
+          temp_elgvn(i)=elgvn
+          tdsl(i) = 0.d0
+       end if
+
+       tdsw_a = phobsl * fsurfa(i)
+       if (iprint.eq.1) then
+          write(6,'(/," Averaged atomic contributions to E_phobic:",/)')
+          do j=1,n_reg1
+             write(6,112) j, atom(j), phobsl*atomfs(j)/float(i)
+          end do
+       end if
+       if (iterld.eq.1) write(6,105) elgwa,evdwl(i),tdsw_a,-tds+tdsw_a
+       if (iterld.eq.0) write(6,105) elgvn,evdwl(i),tdsw_a,-tds+tdsw_a
+       write(6,*) repeat("-",72)
+
+       !call vatom (cor,vqdq,ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
+       vatom_result = vatom_f(ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
+       !evqdq = evqdq + vqdq
+       evqdq = evqdq + vatom_result(1)
+       !ecor = ecor + cor
+       ecor = ecor + vatom_result(2)
+    end do
+
+    elgvn = esum/dble(ndxp)
+    evqdq = - evqdq/dble(ndxp)
+    ecor  = ecor/dble(ndxp)
+    !call elgvn_ave(iterld,ndxp)
+    !call elgvn_ave(iterld,ndxp,temp_elgvn,evdwl,fsurfa,phobsl,tdsl,nvol,evdw,ephob,etds,tds0,evqdq,elgwa)
+    elgvn_ave_result = elgvn_ave_f(iterld,ndxp,temp_elgvn,evdwl,fsurfa,phobsl,tdsl,nvol,tds0,evqdq)
+    evdw  = elgvn_ave_result(1)
+    ephob = elgvn_ave_result(2)
+    etds  = elgvn_ave_result(3)
+    if (iterld.eq.1) elgwa = elgvn_ave_result(4) ! was originally in elgvn_ave
+    ! tds0  = elgvn_ave_result(4)
+    ! elgwa = elgvn_ave_result(5)
+    !call vbornx(ndipole,ebw,center_new)
+    !call vbornx(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
+    vbornx_result = vbornx_f(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
+    ebw = vbornx_result
+
+
+    return
+    !.......................................................................
+102 format(1x,72a1)
+105 format(/1x,'Elgvn = ',f8.3,'   Evdw = ',f8.3, &
+         '   -TdS_phobic = ',f8.3,'   -TdS_total = ',f8.3,/)
+112 format(i3,5x,a8,f9.3) 
+  end subroutine dg_ld
 
 end module chemsol

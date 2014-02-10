@@ -40,8 +40,8 @@ subroutine dg_ld (iterld,iprint)
   real*8 center_new(3)
   real(8) :: oshift(3*mxcenter) ! I would rather this just get passed around as a variable than 'save'd in ran_shift
   real(8) :: vatom_result(2),elgvn_ave_result(4),vbornx_result
-  character*1 dash(72)
-  data dash/72*'-'/
+  !character*1 dash(72)
+  !data dash/72*'-'/
   !.......................................................................
   esum = 0.d0
   evqdq = 0.d0
@@ -87,8 +87,8 @@ subroutine dg_ld (iterld,iprint)
      end if
      if (iterld.eq.1) write(6,105) elgwa,evdwl(i),tdsw_a,-tds+tdsw_a
      if (iterld.eq.0) write(6,105) elgvn,evdwl(i),tdsw_a,-tds+tdsw_a
-     write(6,102) dash
-
+     !write(6,102) dash
+     write(6,*) repeat("-",72)
      !call vatom (cor,vqdq,ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
      vatom_result = vatom_f(ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn)
      !evqdq = evqdq + vqdq

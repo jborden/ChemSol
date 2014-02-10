@@ -1,5 +1,5 @@
 program main
-  use chemsol, only : entropy,ef_ld,dg_ld
+  use chemsol, only : entropy,ef_ld,dg_ld,solvout
   !#################################################################
   !                                                                #
   !                        CHEMSOL 2.1                             #
@@ -361,7 +361,8 @@ program main
           drg,drg_inner,rdcutl,out_cut,itl)
 
      !     write out solvation energy
-     call solvout (iterld,do_gas)
+     !call solvout (iterld,do_gas)
+     call solvout (iterld,iprint,do_gas,evqdq,elgwa,etds,evdw,ebw,elgvn,ephob,molname,ssname)
 
      close (44)
      !30    continue

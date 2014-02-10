@@ -1,8 +1,8 @@
 program main
-  use chemsol, only : entropy,ef_ld,dg_ld,solvout
+  use chemsol, only : entropy,readopt,dg_ld,solvout
   !#################################################################
   !                                                                #
-  !                        CHEMSOL 2.1                             #
+  !                        chemsol 2.1                             #
   !                                                                #
   !               Jan Florian and Arieh Warshel                    #
   !                  Department of Chemistry                       #
@@ -349,7 +349,9 @@ program main
      end if
 
      !     Initialize parameters and read in the option file (vdw.par).
-     call readopt (iterld)
+     !call readopt (iterld)
+     call readopt(iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
+       rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
 
      !     Calculate solvation (LD method).
      !     Set parameter iprint to 1, if more output is needed (for debug)

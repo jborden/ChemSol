@@ -1,6 +1,6 @@
 FC = gfortran
 FCFLAGS = -g
-objects = chemsol.o readopt.o
+objects = chemsol.o
 
 main: $(objects)
 	$(FC) $(FCFLAGS) -fdump-core -o main main.f90 $(objects)

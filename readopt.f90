@@ -3,7 +3,7 @@ subroutine readopt (iterld)
 
   PARAMETER (MXATM=500)
   parameter (mxcenter=50)
-  character*1 dash(72)
+  !character*1 dash(72)
   common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
        n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
        q_gas(mxatm),q_mp2(mxatm)
@@ -20,7 +20,7 @@ subroutine readopt (iterld)
   character*13 molname
   character*4 ssname
   character*2 rpinp
-  data dash/72*'-'/
+  !data dash/72*'-'/
   !....................................................................
   !     For the adjustment of VdW radii (rp) and London coef (vdwc6) 
   !     additional input from vdw.par file is added here:
@@ -110,7 +110,10 @@ subroutine readopt (iterld)
      write (6,102) latom(i),(xw(j,i),j=1,3),q(i),q_gas(i), &
           iacw(i), rpi(i),vdwc6(iacw(i))
   enddo
-  write(6,103) dash
+  !write(6,103) dash
+  write(6,*) 
+  write(6,*) repeat("-",72)
+  write(6,*)
 
 95 format(//,1x,'atom #',5x,'x',8x, &
        'y',8x,'z',3x,'Q_pcm',2x,'Q_gas',1x,'atom_type', &

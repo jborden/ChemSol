@@ -1,121 +1,31 @@
 program main
-  use chemsol, only : entropy,readopt,dg_ld,solvout
-  !#################################################################
-  !                                                                #
-  !                        chemsol 2.1                             #
-  !                                                                #
-  !               Jan Florian and Arieh Warshel                    #
-  !                  Department of Chemistry                       #
-  !             University of Southern California                  #
-  !                 Los Angeles, CA 90089-1062                     #
-  !                                                                #
-  !#################################################################
-  !                      October 20, 1999     
-  !#################################################################
-
-  !     Program evaluates hydration free energy of neutral and ionic solutes
-  !     by the Langevin dipole (LD) method.
-  !     Langevin dipoles are point dipoles positioned at fixed grid points.
-  !     ChemSol uses MEP point charges to calculate field at grid points.
-  !     Atomic coordinates are frozen during the calculation.
-  !     On input: 1/ Cartesian coordinates of the solute /reg1/
-  !               2/ Electrostatic potential derived atomic charges.
-  !
-  !     Changes from the version 1.0:
-  !  1. To ensure IBM compatibility, initialization of parameters that 
-  !     appear in common blocks was moved from the SETPAR subroutine to 
-  !     the BLOCK DATA subprogram.
-  !  2. Parameter out_cut was decreased from 20 A to 18 A.
-  !  3. Dimensions of the dipole-dipole pair lists were increased to
-  !     mxpair=2.5M and mxpair2=5M. About 16MB memory is needed for
-  !     these dimensions.
-  !  4. JP3(mxpair) pairlist was eliminated.
-  !  5. Variable iprint was introduced to reduce printout. By default,
-  !     iprint=0 (short output).
-  !  6. A new machine-independent pseudorandom number generator (ran2)
-  !
-  !     Changes from the version 1.1
-  !  1. Bug fix in ran2
-  !  2. 'implicit double precision' was replaced by 'implicit Real*8'
-  !     
-  !     Changes from the version 1.11
-  !  1. A simple parametrization was done for positive ions from the
-  !     first and second group of the periodic table. The default 
-  !     vdW radii have been changed to: Na+(2.55), K+(3.05), Rb+(3.20),
-  !     Mg++(2.00), Ca++(2.40).
-  ! 
-  !     Changes from the version 1.12
-  !  1. New dimensions: mxlgvn=10M, mxpair=5M, mxpair2=10M
-  !
-  !     Changes from the version 1.13 
-  !
-  !  1. A new 'entropy' function was added (in vlgvn and mu_mu_l) to
-  !     account for the entropy decrease if solvent dipoles are "frozen"
-  !     in the regions of the large elstat. field. The sum of the -TdS 
-  !     and elgvn terms is evaluated to determined the convergence
-  !     of the iterative process (in sci_lgvn).
-  !  2. The noniterative LD model is no more supported. (The results
-  !     are printed only in the main output). This model is used
-  !     for initiation of the iterative procedure (in lgvnx) as before.
-  !  3. The Langevin function in vlgvn has been modified to improve
-  !     the behavior of solvation free energies for the charge separation
-  !     processes. For details see Table 1S in Suporting Materials
-  !     for J.Phys.Chem. 1999 paper.
-  !     The new function increases the contribution of the inner grid and
-  !     decreases the contribution of the outer grid to the total energy.
-  !     The factor 3.3 in front of kT represents a screening constant
-  !     for the field (fj) that is introduced to account for limited
-  !     dipole-dipole interactions. The new function is the default.
-  !     The old function can be selected by setting ioldfn=1 in the
-  !     vdw.par file.
-  !  4. default vdW radii for some atom types have been changed
-  !  5. New vdW radii have been added for some transition metals (2+).
-  !  6. The bulk contribution to the solvation energy is calculated
-  !     from the molecular dipole and charge (in previous versious it was
-  !     determined from the total dipole (molecule+LD dipoles))
-  !     for neutral molecules and from the molecular charge for
-  !     charged compounds. This modification was introduced to improve
-  !     treatment of charged compounds with large dipole moments.
-  !  7. Parameter out_cut was decreased from 18 A to 16 A.
-  !
-  !     The version 2.0 of ChemSol program is described in detail
-  !     in the paper: J. Florian, A. Warshel, "Calculations of Hydration
-  !     Entropies of Hydrophobic, Polar, and Ionic Solutes in the framework 
-  !     of the Langevin Dipoles Solvation model",
-  !     J. Phys. Chem B 1999 (in press). 
-  !
-  !     Changes from the version 2.0 
-
-  !     The solute relaxation energy is now included implicitly in Elgvn: 
-  !     dGsolv = dElgvn + dEvdW + dEBorn - TdS 
-  !     Preffered method for calculation atomic charges is now ESP PCM-B3LYP/6-31G*.
-  implicit Real*8 (a-h,o-z)
-  PARAMETER (MXATM=500)
-  PARAMETER (ONE=1.0d0, ZERO=0.d0)
-  parameter (mxcenter=50)
-  common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
-       n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
+  use chemsol, only: entropy,readopt,dg_ld,solvout 
+  integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
+  integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
+  integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
+  real(8) :: xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
+       rpi(mxatm), &
        q_gas(mxatm),q_mp2(mxatm)
-  common /aname/ atom(mxatm),molname,ssname
-  common /pcresult/ elgwa,elgvn,ebw,erelax,evdw,evqdq,ecor
-  common /born/ rg_reg1, rgim
-  common /pcgrid/ drg,rg,dxp0(3),rg_inner,drg_inner
-  common /pcdipcut/ rdcutl,out_cut
-  common /pctimes/ ndxp,itl,itp
-  common/surf/ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
-  common /vdwtds/ vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
-  common /lra/ clgvn, slgvn
-  common /pcgmcntr/ pcenter(3) ! a sin from readopt
-  character*8 atom,dumm1 
-  character*13 molname
-  character*4 ssname
-  character*256 fname
-  character*256 input_file_name
-  character*256 vdw_name
-  character*3 relax 
-  logical do_gas
-  integer iac_conv (89), iacp(mxatm), mass(88)
-  data iac_conv/1,2, &
+  real(8) :: elgwa,elgvn,ebw,erelax,evdw,evqdq,ecor
+  real(8) :: rg_reg1, rgim
+  real(8) :: drg,rg,dxp0(3),rg_inner,drg_inner
+  real(8) :: rdcutl,out_cut
+  integer :: ndxp,itl,itp
+  real(8) :: ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
+  real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
+  real(8) :: clgvn, slgvn
+  real(8) :: pcenter(3) 
+  character(8):: atom(mxatm),dumm1
+  character(13) :: molname
+  character(4) :: ssname
+  character(256) :: fname
+  character(256) :: input_file_name
+  character(256) :: vdw_name
+  character(3) :: relax 
+  logical :: do_gas
+  !integer ::iac_conv (89)
+  integer :: iacp(mxatm),n_reg1,n_inner,iacw(mxatm),latom(mxatm)
+  integer,dimension(89) :: iac_conv = [1,2, &
        3,4,5,6,9,13,16,17, &
        18,19,20,21,22,24,25,26, &
        27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44, &
@@ -123,7 +33,8 @@ program main
        63,64,65, &
        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, &
        66,67,68,69,70,71,72,73,74,75,76,77,78,79,80, &
-       81,82/
+       81,82]
+
   !      ChemSol atom types: 
   !       1-H0, 2-He, 3-Li, 4-Be, 5-B, 6-C0, 7-C1, 8-C2, 9-N0, 10-N1,
   !       11-N2, 12-X, 13-O0, 14-O1, 15-O2, 16-F, 17-Ne, 18-Na, 19-Mg, 20-Al,
@@ -135,7 +46,7 @@ program main
   !       71-Ir, 72-Pt, 73-Au, 74-Hg, 75-Tl, 76-Pb, 77-Bi, 78-Po, 79-At, 80-Rn, 
   !       81-Fr, 82-Ra.
 
-  data mass /1, 4, &
+  integer,dimension(88)::mass = [1,4, &
        7,9,11,12,14,16,19,20, &
        23,24,27,28,31,32,35,40, &
        39,40,45,48,51,52,55,56,59,59,64,65,70,73,75,79,80,84, &
@@ -143,9 +54,7 @@ program main
        132,137,139, &
        140,141,144,145,150,152,157,159,163,165,167,169,173,175, &
        178,181,184,186,190,192,195,197,201,204,207,208,209,210,222, &
-       223,226/ 
-  !     amas needs to be explicitly declared as a real(8)
-  real(8) :: amas
+       223,226]
   ! constants from blockdata
   rg = 26.0
   drg = 3.0
@@ -160,21 +69,21 @@ program main
   rzcut = 1.1
   !      H   He  Li   Be   B    C    C1  C2   N    N1
   rp = [2.3,2.3,2.15,2.00,2.40,2.65,3.0,3.25,2.65,2.85, &
-       !N2   X   O   O1  O2    F    Ne  Na   Mg  Al
+                                !N2   X   O   O1  O2    F    Ne  Na   Mg  Al
        3.2,3.0,2.32,2.65,2.8,2.46,2.5,2.58,1.82,1.70, &
-       !Si  P    X  S    Cl  Ar   K    Ca   Sc  Ti
+                                !Si  P    X  S    Cl  Ar   K    Ca   Sc  Ti
        3.1,3.2,3.0,3.2,3.16,2.8,3.06,2.38,1.5,2.00, &
-       !V    Cr   Mn   Fe   Co   Ni  Cu1+  Zn  Ga   Ge
+                                !V    Cr   Mn   Fe   Co   Ni  Cu1+  Zn  Ga   Ge
        1.91,1.89,1.93,1.84,1.57,1.50,1.88,1.55,2.00,2.50, &
-       !As   Se    Br   Kr   Rb  Sr    Y    Zr  Nb    Mo
+                                !As   Se    Br   Kr   Rb  Sr    Y    Zr  Nb    Mo
        3.00,3.00,3.44,3.00,3.25,2.70,1.75,2.00,2.00,2.00, &
-       !Tc    Ru   Rh  Pd   Ag    Cd   In   Sn   Sb  Te
+                                !Tc    Ru   Rh  Pd   Ag    Cd   In   Sn   Sb  Te
        2.00,2.00,2.00,2.00,2.25,1.98,2.45,2.44,3.00,3.70, &
-       !I    Xe   Cs   Ba   La   Hf   Ta   W    Re   Ir 
+                                !I    Xe   Cs   Ba   La   Hf   Ta   W    Re   Ir 
        3.80,3.55,3.58,2.92,2.30,3.00,3.00,3.00,3.00,3.00, &
-       !Pt   Au   Hg   Tl   Pb   Bi   Po   At   Rn   Fr
+                                !Pt   Au   Hg   Tl   Pb   Bi   Po   At   Rn   Fr
        3.00,1.77,1.94,2.00,2.55,3.00,3.00,3.00,3.00,3.00, &
-       !Ra   Ac
+                                !Ra   Ac
        3.50,3.00]
   !     open archive (this is actually done in subroutine solvout
   !     open (43,file='cs.arc',access ='append')
@@ -351,12 +260,12 @@ program main
      !     Initialize parameters and read in the option file (vdw.par).
      !call readopt (iterld)
      call readopt(iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
-       rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
+          rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
 
      !     Calculate solvation (LD method).
      !     Set parameter iprint to 1, if more output is needed (for debug)
      iprint = 0
-!     call dg_ld (iterld,iprint)
+     !     call dg_ld (iterld,iprint)
      call dg_ld (iterld,iprint,evqdq,ecor,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, & 
           pcenter,phobsl,q,q_gas,q_mp2,rg,rg_inner,rg_reg1,rgim,rpi, &
           rzcut,slgvn,tds0,vdwc6,vdwsl,xw,atom,n_reg1, &

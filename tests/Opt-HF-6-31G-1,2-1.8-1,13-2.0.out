@@ -1,0 +1,1005 @@
+      ***********************************************************
+                                                                 
+                             CHEMSOL 2.1                         
+                                                                 
+                    Jan Florian and Arieh Warshel                
+                  University of Southern California              
+                          Los Angeles, 1999                      
+                                                                 
+      ***********************************************************
+
+
+
+ Solute                           :      LD Opt-HF-6-3
+ Total charge for gas-phase solute:     -2.00
+ Total charge for PCM solute      :     -2.00
+ Molecular weight (a.u.)          :    170.00
+ Gas-phase transl. entropy (298dS):     10.43 kcal/mol
+
+
+ atom #     x        y        z   Q_pcm  Q_gas atom_type   rp    VdWC6
+
+     1   -0.005   -0.410    0.216  1.45  1.45    22       3.20    1.00
+     2    1.270   -0.615    1.469 -0.78 -0.78    13       2.65    0.50
+     3    1.755   -0.349    2.626  1.13  1.13     6       3.00    1.00
+     4    0.981    0.543    3.639 -0.51 -0.51     6       2.65    1.00
+     5    2.847   -0.786    3.029 -0.88 -0.88    13       2.65    0.50
+     6    1.630    1.373    3.928  0.13  0.13     1       2.33    1.00
+     7    0.777   -0.055    4.532  0.13  0.13     1       2.33    1.00
+     8    0.052    0.904    3.193  0.15  0.15     1       2.33    1.00
+     9   -0.941    0.482    1.035 -0.95 -0.95    13       2.80    0.50
+    10   -0.130   -1.918    0.001 -0.90 -0.90    13       2.80    0.50
+    11    1.222    0.435   -0.604 -0.81 -0.81    13       2.80    0.50
+    12    0.708    0.661   -1.400  0.49  0.49     1       2.04    1.00
+    13   -0.943    0.007   -1.501 -0.88 -0.88    13       2.32    0.50
+    14   -1.308   -0.898   -2.491  0.33  0.33     6       2.65    1.00
+    15   -2.355   -0.736   -2.839 -0.04 -0.04     1       2.33    1.00
+    16   -0.677   -0.835   -3.412 -0.04 -0.04     1       2.33    1.00
+    17   -1.235   -1.937   -2.127 -0.03 -0.03     1       2.33    1.00
+
+ ------------------------------------------------------------------------
+
+
+ Grid origin                0.415   -0.243    0.547
+
+ No of inner grid dipoles              :        909
+ No of surface constrained dipoles     :        458
+ Total number of Langevin dipoles      :       2389
+ Noniterative lgvn energy (total,inner):   -194.323  -173.360
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2728977 out of    2.500 A cutoff
+        pairs selected        -     120191 within    6.100 A cutoff
+        pairs selected (long) -     983185 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.518         -196.885         -206.518
+       1        -165.982         -138.639         -142.911
+       2        -174.283         -136.488         -159.982
+       3        -183.130         -138.955         -169.868
+       4        -189.221         -141.128         -176.688
+       5        -193.307         -142.806         -181.127
+       6        -196.091         -144.111         -184.018
+       7        -198.029         -145.145         -185.897
+       8        -199.407         -145.981         -187.093
+       9        -200.405         -146.665         -187.808
+      10        -201.338         -147.359         -188.454
+      11        -202.156         -147.991         -188.978
+      12        -202.853         -148.547         -189.375
+      13        -203.442         -149.028         -189.658
+      14        -203.934         -149.440         -189.840
+      15        -204.344         -149.790         -189.936
+      16        -204.681         -150.085         -189.957
+      17        -204.956         -150.332         -189.914
+      18        -205.177         -150.536         -189.813
+
+ Elgvn = -205.177   Evdw =   -5.598   -TdS_phobic =    0.000   -TdS_total =   15.365
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.325   -1.161   -0.402
+
+ No of inner grid dipoles              :        905
+ No of surface constrained dipoles     :        464
+ Total number of Langevin dipoles      :       2386
+ Noniterative lgvn energy (total,inner):   -191.601  -169.992
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2719314 out of    2.500 A cutoff
+        pairs selected        -     119267 within    6.100 A cutoff
+        pairs selected (long) -     981061 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -204.449         -193.152         -204.449
+       1        -164.856         -136.304         -142.568
+       2        -172.783         -133.967         -158.547
+       3        -181.366         -136.248         -168.155
+       4        -187.319         -138.304         -174.824
+       5        -191.338         -139.904         -179.198
+       6        -194.093         -141.154         -182.072
+       7        -196.023         -142.150         -183.968
+       8        -197.405         -142.957         -185.206
+       9        -198.414         -143.621         -185.982
+      10        -199.348         -144.288         -186.660
+      11        -200.162         -144.895         -187.211
+      12        -200.854         -145.425         -187.628
+      13        -201.436         -145.882         -187.923
+      14        -201.920         -146.270         -188.110
+      15        -202.319         -146.597         -188.202
+      16        -202.646         -146.869         -188.211
+      17        -202.908         -147.091         -188.144
+      18        -203.114         -147.270         -188.010
+
+ Elgvn = -203.114   Evdw =   -5.514   -TdS_phobic =    0.000   -TdS_total =   15.104
+
+ ------------------------------------------------------------------------
+
+ Grid origin                1.027    0.678   -0.175
+
+ No of inner grid dipoles              :        902
+ No of surface constrained dipoles     :        465
+ Total number of Langevin dipoles      :       2390
+ Noniterative lgvn energy (total,inner):   -194.214  -171.102
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2728316 out of    2.500 A cutoff
+        pairs selected        -     120160 within    6.100 A cutoff
+        pairs selected (long) -     985446 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.654         -194.642         -206.654
+       1        -165.964         -136.725         -143.460
+       2        -173.965         -134.213         -159.691
+       3        -182.608         -136.344         -169.412
+       4        -188.574         -138.256         -176.167
+       5        -192.587         -139.732         -180.612
+       6        -195.329         -140.878         -183.561
+       7        -197.244         -141.784         -185.545
+       8        -198.612         -142.513         -186.888
+       9        -199.608         -143.110         -187.791
+      10        -200.516         -143.703         -188.550
+      11        -201.302         -144.240         -189.182
+      12        -201.967         -144.706         -189.683
+      13        -202.526         -145.106         -190.065
+      14        -202.990         -145.444         -190.341
+      15        -203.375         -145.728         -190.521
+      16        -203.689         -145.962         -190.616
+      17        -203.943         -146.151         -190.632
+      18        -204.143         -146.300         -190.576
+      19        -204.294         -146.411         -190.452
+
+ Elgvn = -204.294   Evdw =   -5.688   -TdS_phobic =    0.000   -TdS_total =   13.842
+
+ ------------------------------------------------------------------------
+
+ Grid origin               -0.585   -0.951    0.633
+
+ No of inner grid dipoles              :        900
+ No of surface constrained dipoles     :        449
+ Total number of Langevin dipoles      :       2371
+ Noniterative lgvn energy (total,inner):   -190.848  -168.520
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2690647 out of    2.500 A cutoff
+        pairs selected        -     118455 within    6.100 A cutoff
+        pairs selected (long) -     975662 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -201.985         -191.565         -201.985
+       1        -163.392         -135.413         -141.757
+       2        -171.573         -132.972         -157.460
+       3        -180.239         -135.083         -167.125
+       4        -186.222         -136.995         -173.855
+       5        -190.242         -138.471         -178.279
+       6        -192.984         -139.615         -181.204
+       7        -194.894         -140.517         -183.157
+       8        -196.253         -141.240         -184.465
+       9        -197.237         -141.827         -185.328
+      10        -198.138         -142.416         -186.061
+      11        -198.916         -142.948         -186.668
+      12        -199.573         -143.411         -187.146
+      13        -200.121         -143.805         -187.506
+      14        -200.574         -144.138         -187.764
+      15        -200.946         -144.416         -187.931
+      16        -201.248         -144.646         -188.020
+      17        -201.490         -144.833         -188.039
+      18        -201.679         -144.981         -187.997
+      19        -201.823         -145.095         -187.899
+
+ Elgvn = -201.823   Evdw =   -5.550   -TdS_phobic =    0.000   -TdS_total =   13.924
+
+ ------------------------------------------------------------------------
+
+ Grid origin               -0.509   -0.646    0.602
+
+ No of inner grid dipoles              :        902
+ No of surface constrained dipoles     :        443
+ Total number of Langevin dipoles      :       2372
+ Noniterative lgvn energy (total,inner):   -194.162  -171.528
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2695531 out of    2.500 A cutoff
+        pairs selected        -     119186 within    6.100 A cutoff
+        pairs selected (long) -     979715 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -202.841         -194.537         -202.841
+       1        -164.263         -137.571         -141.390
+       2        -173.035         -135.132         -158.401
+       3        -182.143         -137.292         -168.659
+       4        -188.429         -139.245         -175.756
+       5        -192.664         -140.762         -180.415
+       6        -195.564         -141.947         -183.498
+       7        -197.598         -142.890         -185.559
+       8        -199.055         -143.654         -186.941
+       9        -200.123         -144.283         -187.855
+      10        -201.116         -144.927         -188.650
+      11        -201.987         -145.516         -189.321
+      12        -202.733         -146.035         -189.860
+      13        -203.365         -146.483         -190.278
+      14        -203.897         -146.866         -190.589
+      15        -204.343         -147.191         -190.804
+      16        -204.713         -147.464         -190.934
+      17        -205.019         -147.691         -190.988
+      18        -205.266         -147.875         -190.973
+      19        -205.463         -148.021         -190.894
+
+ Elgvn = -205.463   Evdw =   -5.604   -TdS_phobic =    0.000   -TdS_total =   14.569
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.873   -0.845    0.560
+
+ No of inner grid dipoles              :        912
+ No of surface constrained dipoles     :        469
+ Total number of Langevin dipoles      :       2393
+ Noniterative lgvn energy (total,inner):   -195.956  -174.024
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2733481 out of    2.500 A cutoff
+        pairs selected        -     121102 within    6.100 A cutoff
+        pairs selected (long) -     990471 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -209.640         -197.077         -209.640
+       1        -168.495         -139.144         -145.524
+       2        -176.498         -137.012         -162.315
+       3        -185.184         -139.458         -172.097
+       4        -191.181         -141.604         -178.878
+       5        -195.209         -143.258         -183.334
+       6        -197.958         -144.546         -186.287
+       7        -199.878         -145.571         -188.271
+       8        -201.250         -146.405         -189.617
+       9        -202.252         -147.097         -190.527
+      10        -203.175         -147.783         -191.299
+      11        -203.981         -148.408         -191.952
+      12        -204.671         -148.958         -192.480
+      13        -205.253         -149.436         -192.892
+      14        -205.742         -149.847         -193.199
+      15        -206.148         -150.197         -193.410
+      16        -206.481         -150.492         -193.535
+      17        -206.750         -150.736         -193.578
+      18        -206.961         -150.934         -193.543
+      19        -207.120         -151.089         -193.430
+
+ Elgvn = -207.120   Evdw =   -5.532   -TdS_phobic =    0.000   -TdS_total =   13.689
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.369    0.272    0.588
+
+ No of inner grid dipoles              :        912
+ No of surface constrained dipoles     :        457
+ Total number of Langevin dipoles      :       2388
+ Noniterative lgvn energy (total,inner):   -196.264  -173.922
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2726939 out of    2.500 A cutoff
+        pairs selected        -     121256 within    6.100 A cutoff
+        pairs selected (long) -     990414 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -209.452         -197.519         -209.452
+       1        -167.951         -139.146         -145.076
+       2        -175.862         -136.867         -161.541
+       3        -184.433         -139.157         -171.075
+       4        -190.351         -141.181         -177.707
+       5        -194.342         -142.745         -182.053
+       6        -197.077         -143.959         -184.907
+       7        -198.989         -144.917         -186.781
+       8        -200.355         -145.684         -187.991
+       9        -201.345         -146.302         -188.732
+      10        -202.262         -146.924         -189.383
+      11        -203.059         -147.484         -189.906
+      12        -203.736         -147.968         -190.297
+      13        -204.303         -148.379         -190.568
+      14        -204.775         -148.723         -190.733
+      15        -205.165         -149.007         -190.806
+      16        -205.484         -149.239         -190.799
+      17        -205.742         -149.425         -190.723
+
+ Elgvn = -205.742   Evdw =   -5.670   -TdS_phobic =    0.000   -TdS_total =   15.019
+
+ ------------------------------------------------------------------------
+
+ Grid origin               -0.570    0.392    1.206
+
+ No of inner grid dipoles              :        901
+ No of surface constrained dipoles     :        466
+ Total number of Langevin dipoles      :       2386
+ Noniterative lgvn energy (total,inner):   -195.453  -172.021
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2718320 out of    2.500 A cutoff
+        pairs selected        -     119833 within    6.100 A cutoff
+        pairs selected (long) -     982666 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.845         -195.407         -206.845
+       1        -166.575         -137.470         -143.349
+       2        -174.680         -134.740         -160.238
+       3        -183.526         -136.877         -170.179
+       4        -189.641         -138.814         -177.066
+       5        -193.751         -140.308         -181.577
+       6        -196.555         -141.459         -184.547
+       7        -198.511         -142.363         -186.518
+       8        -199.903         -143.081         -187.822
+       9        -200.912         -143.659         -188.660
+      10        -201.834         -144.238         -189.372
+      11        -202.630         -144.756         -189.949
+      12        -203.300         -145.203         -190.386
+      13        -203.858         -145.579         -190.697
+      14        -204.318         -145.891         -190.895
+      15        -204.694         -146.146         -190.995
+      16        -204.997         -146.351         -191.007
+      17        -205.237         -146.511         -190.941
+      18        -205.422         -146.630         -190.803
+
+ Elgvn = -205.422   Evdw =   -5.592   -TdS_phobic =    0.000   -TdS_total =   14.619
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.037    0.726   -0.266
+
+ No of inner grid dipoles              :        902
+ No of surface constrained dipoles     :        457
+ Total number of Langevin dipoles      :       2384
+ Noniterative lgvn energy (total,inner):   -191.966  -169.567
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2717776 out of    2.500 A cutoff
+        pairs selected        -     119274 within    6.100 A cutoff
+        pairs selected (long) -     981088 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -203.086         -192.939         -203.086
+       1        -163.931         -136.053         -141.469
+       2        -172.163         -133.596         -157.791
+       3        -180.827         -135.681         -167.588
+       4        -186.793         -137.572         -174.342
+       5        -190.799         -139.034         -178.765
+       6        -193.528         -140.167         -181.683
+       7        -195.428         -141.057         -183.627
+       8        -196.779         -141.767         -184.925
+       9        -197.757         -142.341         -185.779
+      10        -198.650         -142.915         -186.502
+      11        -199.423         -143.431         -187.098
+      12        -200.076         -143.879         -187.566
+      13        -200.623         -144.259         -187.916
+      14        -201.077         -144.580         -188.162
+      15        -201.451         -144.846         -188.316
+      16        -201.756         -145.064         -188.389
+      17        -202.001         -145.238         -188.390
+      18        -202.193         -145.374         -188.325
+      19        -202.338         -145.474         -188.202
+
+ Elgvn = -202.338   Evdw =   -5.532   -TdS_phobic =    0.000   -TdS_total =   14.136
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.044   -1.231   -0.069
+
+ No of inner grid dipoles              :        902
+ No of surface constrained dipoles     :        457
+ Total number of Langevin dipoles      :       2379
+ Noniterative lgvn energy (total,inner):   -190.176  -168.273
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2705881 out of    2.500 A cutoff
+        pairs selected        -     118775 within    6.100 A cutoff
+        pairs selected (long) -     979065 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -200.604         -191.485         -200.604
+       1        -161.851         -134.502         -138.787
+       2        -170.367         -132.122         -155.874
+       3        -179.289         -134.356         -165.955
+       4        -185.429         -136.366         -172.879
+       5        -189.541         -137.920         -177.396
+       6        -192.335         -139.126         -180.354
+       7        -194.272         -140.079         -182.299
+       8        -195.643         -140.845         -183.567
+       9        -196.629         -141.469         -184.361
+      10        -197.527         -142.089         -185.029
+      11        -198.302         -142.648         -185.562
+      12        -198.956         -143.135         -185.961
+      13        -199.501         -143.552         -186.239
+      14        -199.953         -143.904         -186.412
+      15        -200.324         -144.200         -186.496
+      16        -200.626         -144.446         -186.505
+      17        -200.868         -144.648         -186.449
+      18        -201.059         -144.810         -186.338
+
+ Elgvn = -201.059   Evdw =   -5.538   -TdS_phobic =    0.000   -TdS_total =   14.721
+
+ ------------------------------------------------------------------------
+
+ Grid origin                1.149    0.674   -0.403
+
+ No of inner grid dipoles              :        906
+ No of surface constrained dipoles     :        465
+ Total number of Langevin dipoles      :       2393
+ Noniterative lgvn energy (total,inner):   -194.366  -171.274
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2735405 out of    2.500 A cutoff
+        pairs selected        -     120772 within    6.100 A cutoff
+        pairs selected (long) -     990359 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.411         -194.770         -206.411
+       1        -165.758         -136.698         -143.381
+       2        -173.788         -134.164         -159.610
+       3        -182.365         -136.241         -169.266
+       4        -188.268         -138.126         -175.934
+       5        -192.232         -139.594         -180.309
+       6        -194.934         -140.739         -183.204
+       7        -196.816         -141.647         -185.143
+       8        -198.155         -142.379         -186.447
+       9        -199.125         -142.976         -187.316
+      10        -200.005         -143.567         -188.050
+      11        -200.762         -144.098         -188.657
+      12        -201.400         -144.559         -189.136
+      13        -201.932         -144.954         -189.499
+      14        -202.372         -145.288         -189.761
+      15        -202.735         -145.568         -189.933
+      16        -203.030         -145.801         -190.026
+      17        -203.267         -145.991         -190.047
+      18        -203.453         -146.143         -190.003
+      19        -203.594         -146.259         -189.897
+
+ Elgvn = -203.594   Evdw =   -5.604   -TdS_phobic =    0.000   -TdS_total =   13.697
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.928   -0.712   -0.026
+
+ No of inner grid dipoles              :        898
+ No of surface constrained dipoles     :        458
+ Total number of Langevin dipoles      :       2380
+ Noniterative lgvn energy (total,inner):   -193.556  -171.315
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2707940 out of    2.500 A cutoff
+        pairs selected        -     118374 within    6.100 A cutoff
+        pairs selected (long) -     976252 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -207.759         -194.214         -207.759
+       1        -167.910         -137.889         -145.829
+       2        -175.467         -135.511         -161.359
+       3        -183.924         -137.857         -170.799
+       4        -189.804         -139.961         -177.426
+       5        -193.760         -141.580         -181.795
+       6        -196.459         -142.830         -184.690
+       7        -198.340         -143.815         -186.630
+       8        -199.680         -144.606         -187.939
+       9        -200.654         -145.252         -188.816
+      10        -201.538         -145.884         -189.549
+      11        -202.301         -146.451         -190.156
+      12        -202.946         -146.943         -190.636
+      13        -203.485         -147.365         -191.001
+      14        -203.932         -147.722         -191.264
+      15        -204.298         -148.021         -191.437
+      16        -204.594         -148.268         -191.531
+      17        -204.830         -148.468         -191.555
+      18        -205.011         -148.626         -191.514
+      19        -205.144         -148.745         -191.414
+
+ Elgvn = -205.144   Evdw =   -5.562   -TdS_phobic =    0.000   -TdS_total =   13.730
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.893   -0.492    0.661
+
+ No of inner grid dipoles              :        904
+ No of surface constrained dipoles     :        464
+ Total number of Langevin dipoles      :       2384
+ Noniterative lgvn energy (total,inner):   -192.949  -171.437
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2714519 out of    2.500 A cutoff
+        pairs selected        -     119385 within    6.100 A cutoff
+        pairs selected (long) -     978852 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -204.345         -194.835         -204.345
+       1        -165.064         -137.733         -142.406
+       2        -173.406         -135.425         -159.073
+       3        -182.267         -137.754         -169.011
+       4        -188.367         -139.831         -175.886
+       5        -192.454         -141.435         -180.374
+       6        -195.234         -142.683         -183.309
+       7        -197.168         -143.674         -185.235
+       8        -198.544         -144.475         -186.488
+       9        -199.542         -145.134         -187.269
+      10        -200.466         -145.795         -187.939
+      11        -201.270         -146.396         -188.481
+      12        -201.954         -146.922         -188.891
+      13        -202.529         -147.374         -189.179
+      14        -203.007         -147.757         -189.360
+      15        -203.400         -148.079         -189.448
+      16        -203.721         -148.346         -189.453
+      17        -203.977         -148.562         -189.386
+      18        -204.175         -148.732         -189.254
+
+ Elgvn = -204.175   Evdw =   -5.646   -TdS_phobic =    0.000   -TdS_total =   14.922
+
+ ------------------------------------------------------------------------
+
+ Grid origin               -0.118   -0.258    0.813
+
+ No of inner grid dipoles              :        903
+ No of surface constrained dipoles     :        460
+ Total number of Langevin dipoles      :       2380
+ Noniterative lgvn energy (total,inner):   -191.377  -170.425
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2706802 out of    2.500 A cutoff
+        pairs selected        -     118964 within    6.100 A cutoff
+        pairs selected (long) -     974255 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -202.545         -194.036         -202.545
+       1        -162.300         -135.677         -139.075
+       2        -170.819         -133.464         -156.418
+       3        -179.709         -135.762         -166.515
+       4        -185.804         -137.776         -173.429
+       5        -189.885         -139.317         -177.926
+       6        -192.662         -140.507         -180.869
+       7        -194.596         -141.444         -182.811
+       8        -195.974         -142.196         -184.089
+       9        -196.977         -142.809         -184.908
+      10        -197.908         -143.432         -185.629
+      11        -198.720         -143.999         -186.230
+      12        -199.413         -144.494         -186.704
+      13        -199.996         -144.921         -187.062
+      14        -200.485         -145.284         -187.320
+      15        -200.894         -145.591         -187.490
+      16        -201.232         -145.849         -187.585
+      17        -201.510         -146.063         -187.614
+      18        -201.737         -146.238         -187.586
+      19        -201.918         -146.379         -187.507
+
+ Elgvn = -201.918   Evdw =   -5.610   -TdS_phobic =    0.000   -TdS_total =   14.411
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.421   -0.069    0.926
+
+ No of inner grid dipoles              :        909
+ No of surface constrained dipoles     :        452
+ Total number of Langevin dipoles      :       2383
+ Noniterative lgvn energy (total,inner):   -192.114  -170.576
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2717435 out of    2.500 A cutoff
+        pairs selected        -     119916 within    6.100 A cutoff
+        pairs selected (long) -     984683 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -204.955         -194.034         -204.955
+       1        -164.765         -136.424         -142.051
+       2        -173.003         -134.316         -158.885
+       3        -181.696         -136.685         -168.676
+       4        -187.659         -138.761         -175.403
+       5        -191.649         -140.358         -179.785
+       6        -194.362         -141.598         -182.650
+       7        -196.248         -142.581         -184.530
+       8        -197.589         -143.376         -185.748
+       9        -198.562         -144.028         -186.502
+      10        -199.457         -144.676         -187.147
+      11        -200.235         -145.264         -187.663
+      12        -200.897         -145.778         -188.047
+      13        -201.453         -146.219         -188.311
+      14        -201.916         -146.594         -188.470
+      15        -202.297         -146.909         -188.537
+      16        -202.608         -147.170         -188.526
+      17        -202.857         -147.382         -188.448
+
+ Elgvn = -202.857   Evdw =   -5.532   -TdS_phobic =    0.000   -TdS_total =   14.409
+
+ ------------------------------------------------------------------------
+
+ Grid origin               -0.204   -0.494    0.304
+
+ No of inner grid dipoles              :        906
+ No of surface constrained dipoles     :        479
+ Total number of Langevin dipoles      :       2388
+ Noniterative lgvn energy (total,inner):   -192.098  -170.934
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2716962 out of    2.500 A cutoff
+        pairs selected        -     119294 within    6.100 A cutoff
+        pairs selected (long) -     979910 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -205.034         -194.198         -205.034
+       1        -165.160         -137.113         -142.517
+       2        -173.225         -134.991         -159.057
+       3        -181.845         -137.388         -168.760
+       4        -187.792         -139.508         -175.471
+       5        -191.791         -141.152         -179.873
+       6        -194.526         -142.435         -182.785
+       7        -196.441         -143.459         -184.736
+       8        -197.814         -144.292         -186.052
+       9        -198.820         -144.980         -186.933
+      10        -199.759         -145.673         -187.699
+      11        -200.584         -146.307         -188.352
+      12        -201.293         -146.867         -188.886
+      13        -201.897         -147.356         -189.308
+      14        -202.409         -147.778         -189.633
+      15        -202.842         -148.142         -189.873
+      16        -203.207         -148.455         -190.039
+      17        -203.513         -148.723         -190.141
+      18        -203.768         -148.951         -190.186
+      19        -203.978         -149.143         -190.180
+      20        -204.149         -149.303         -190.128
+
+ Elgvn = -204.149   Evdw =   -5.682   -TdS_phobic =    0.000   -TdS_total =   14.021
+
+ ------------------------------------------------------------------------
+
+ Grid origin                1.094   -0.881    0.550
+
+ No of inner grid dipoles              :        904
+ No of surface constrained dipoles     :        461
+ Total number of Langevin dipoles      :       2384
+ Noniterative lgvn energy (total,inner):   -194.468  -172.408
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2715912 out of    2.500 A cutoff
+        pairs selected        -     119820 within    6.100 A cutoff
+        pairs selected (long) -     982327 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -205.390         -195.498         -205.390
+       1        -165.960         -138.343         -143.435
+       2        -174.247         -135.942         -159.949
+       3        -183.114         -138.232         -169.867
+       4        -189.241         -140.295         -176.771
+       5        -193.358         -141.896         -181.310
+       6        -196.167         -143.144         -184.310
+       7        -198.124         -144.135         -186.314
+       8        -199.519         -144.937         -187.658
+       9        -200.533         -145.598         -188.548
+      10        -201.468         -146.260         -189.303
+      11        -202.284         -146.864         -189.934
+      12        -202.978         -147.395         -190.438
+      13        -203.563         -147.854         -190.823
+      14        -204.052         -148.247         -191.104
+      15        -204.458         -148.580         -191.293
+      16        -204.791         -148.860         -191.400
+      17        -205.060         -149.093         -191.434
+      18        -205.273         -149.281         -191.401
+      19        -205.435         -149.429         -191.305
+
+ Elgvn = -205.435   Evdw =   -5.640   -TdS_phobic =    0.000   -TdS_total =   14.130
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.329    0.654    0.129
+
+ No of inner grid dipoles              :        899
+ No of surface constrained dipoles     :        460
+ Total number of Langevin dipoles      :       2383
+ Noniterative lgvn energy (total,inner):   -194.334  -171.986
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2714101 out of    2.500 A cutoff
+        pairs selected        -     118853 within    6.100 A cutoff
+        pairs selected (long) -     979618 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.495         -194.770         -206.495
+       1        -167.495         -138.437         -145.066
+       2        -175.582         -136.079         -161.204
+       3        -184.269         -138.339         -171.007
+       4        -190.280         -140.381         -177.796
+       5        -194.328         -141.971         -182.261
+       6        -197.095         -143.214         -185.221
+       7        -199.028         -144.205         -187.204
+       8        -200.408         -145.009         -188.539
+       9        -201.413         -145.673         -189.427
+      10        -202.343         -146.340         -190.183
+      11        -203.160         -146.952         -190.821
+      12        -203.862         -147.495         -191.334
+      13        -204.461         -147.970         -191.734
+      14        -204.968         -148.384         -192.033
+      15        -205.398         -148.741         -192.243
+      16        -205.759         -149.048         -192.375
+      17        -206.061         -149.312         -192.438
+      18        -206.311         -149.535         -192.438
+      19        -206.515         -149.721         -192.381
+      20        -206.678         -149.874         -192.270
+
+ Elgvn = -206.678   Evdw =   -5.610   -TdS_phobic =    0.000   -TdS_total =   14.408
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.886   -1.200   -0.289
+
+ No of inner grid dipoles              :        910
+ No of surface constrained dipoles     :        467
+ Total number of Langevin dipoles      :       2392
+ Noniterative lgvn energy (total,inner):   -192.720  -170.924
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2731958 out of    2.500 A cutoff
+        pairs selected        -     120950 within    6.100 A cutoff
+        pairs selected (long) -     988761 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -206.227         -194.739         -206.227
+       1        -164.268         -135.538         -141.122
+       2        -172.324         -133.286         -158.205
+       3        -180.985         -135.616         -167.955
+       4        -186.934         -137.657         -174.697
+       5        -190.923         -139.226         -179.119
+       6        -193.642         -140.446         -182.045
+       7        -195.539         -141.416         -184.009
+       8        -196.892         -142.203         -185.337
+       9        -197.880         -142.854         -186.230
+      10        -198.788         -143.503         -186.981
+      11        -199.578         -144.093         -187.607
+      12        -200.251         -144.610         -188.102
+      13        -200.816         -145.056         -188.476
+      14        -201.287         -145.435         -188.738
+      15        -201.675         -145.754         -188.899
+      16        -201.991         -146.019         -188.967
+      17        -202.242         -146.233         -188.947
+      18        -202.434         -146.400         -188.844
+
+ Elgvn = -202.434   Evdw =   -5.604   -TdS_phobic =    0.000   -TdS_total =   13.590
+
+ ------------------------------------------------------------------------
+
+ Grid origin                0.613   -1.165    1.380
+
+ No of inner grid dipoles              :        907
+ No of surface constrained dipoles     :        459
+ Total number of Langevin dipoles      :       2385
+ Noniterative lgvn energy (total,inner):   -192.551  -170.622
+
+
+ Iterative LD calculation for the chosen grid
+
+ dipole pair list
+
+        total possible pairs  -    2719188 out of    2.500 A cutoff
+        pairs selected        -     119635 within    6.100 A cutoff
+        pairs selected (long) -     984439 within   16.000 A cutoff
+        pairs selected (long) -          0 out of   16.000 A cutoff
+
+
+ Iteration         Elgvn     Elgvn_inner     Elgvn-TdS_immob
+
+       0        -203.820         -193.612         -203.820
+       1        -164.561         -136.619         -141.880
+       2        -172.964         -134.406         -158.769
+       3        -181.793         -136.704         -168.706
+       4        -187.863         -138.731         -175.567
+       5        -191.932         -140.286         -180.059
+       6        -194.700         -141.485         -183.021
+       7        -196.625         -142.428         -184.993
+       8        -197.991         -143.183         -186.309
+       9        -198.980         -143.795         -187.172
+      10        -199.882         -144.403         -187.897
+      11        -200.657         -144.949         -188.488
+      12        -201.308         -145.419         -188.943
+      13        -201.848         -145.817         -189.275
+      14        -202.291         -146.150         -189.499
+      15        -202.653         -146.425         -189.629
+      16        -202.943         -146.649         -189.676
+      17        -203.171         -146.827         -189.651
+      18        -203.346         -146.964         -189.562
+
+ Elgvn = -203.346   Evdw =   -5.538   -TdS_phobic =    0.000   -TdS_total =   13.784
+
+ ------------------------------------------------------------------------
+  Final LD energies for different grids
+
+                    Elgvn     
+
+          1    -205.177
+          2    -203.114
+          3    -204.294
+          4    -201.823
+          5    -205.463
+          6    -207.120
+          7    -205.742
+          8    -205.422
+          9    -202.338
+         10    -201.059
+         11    -203.594
+         12    -205.144
+         13    -204.175
+         14    -201.918
+         15    -202.857
+         16    -204.149
+         17    -205.435
+         18    -206.678
+         19    -202.434
+         20    -203.346
+
+
+ lowest energy        --->    -207.120
+ mean energy          --->    -204.064
+ boltzmann <energies> --->    -206.635
+ for temperature      --->       300.0 K
+
+
+ Contributions to -TdS (kcal/mol)
+ Change in free-volume:            1.400
+ Hydrophobic          :            0.000
+ Dipolar saturation   :           14.305
+
+ ------------------------------------------------------------------------
+
+ Estimation of the bulk energy using Born equation
+
+
+ Born radius equals -     21.67 A
+
+ molecular dipole (Debye)        -      9.44
+ molecular charge                -     -2.00
+ Born  monopole energy           -    -22.69
+ scaled Onsager dipole energy    -     -0.00
+
+ total bulk energy difference    -    -22.69
+
+ ------------------------------------------------------------------------
+
+ FINAL RESULTS
+
+
+ *****************************
+ Langevin Dipoles Calculation 
+ *****************************
+
+ Transfer of solute at 298K: GAS,1M -> WATER,1M (kcal/mol)
+
+ Langevin energy                                -204.06
+ -TdS                                             15.70
+ VdW energy                                       -5.59
+ dBorn+dOnsager                                  -22.69
+ Total dG                                       -216.64
+
+
+
+Molecule               lgvn    VdW   -TdS            Born   dHsolv   dGsolv
+LD Opt-HF-6-3        -204.1   -5.6   15.7           -22.7   -232.3   -216.6
+

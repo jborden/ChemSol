@@ -6,7 +6,8 @@ program main
   real(8) :: xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
        rpi(mxatm), &
        q_gas(mxatm),q_mp2(mxatm)
-  real(8) :: elgwa,elgvn,ebw,erelax,evdw,evqdq,ecor
+  ! ecor was removed as it seems to be local to dg_ld
+  real(8) :: ebw,elgvn,elgwa,erelax,evdw,evqdq
   real(8) :: rg_reg1, rgim
   real(8) :: drg,rg,dxp0(3),rg_inner,drg_inner
   real(8) :: rdcutl,out_cut
@@ -55,7 +56,7 @@ program main
        140,141,144,145,150,152,157,159,163,165,167,169,173,175, &
        178,181,184,186,190,192,195,197,201,204,207,208,209,210,222, &
        223,226]
-  ! constants from blockdata
+  ! from blockdata
   rg = 26.0
   drg = 3.0
   drg_inner = 1.0
@@ -63,27 +64,27 @@ program main
   out_cut = 16.0
   dxp0 = [0.0,0.0,0.0]
   rgim = 2.0
-  ndxp = 10
+  !ndxp = 10
   itl = 399
   itp = 5
   rzcut = 1.1
   !      H   He  Li   Be   B    C    C1  C2   N    N1
   rp = [2.3,2.3,2.15,2.00,2.40,2.65,3.0,3.25,2.65,2.85, &
-                                !N2   X   O   O1  O2    F    Ne  Na   Mg  Al
+       !N2   X   O   O1  O2    F    Ne  Na   Mg  Al
        3.2,3.0,2.32,2.65,2.8,2.46,2.5,2.58,1.82,1.70, &
-                                !Si  P    X  S    Cl  Ar   K    Ca   Sc  Ti
+       !Si  P    X  S    Cl  Ar   K    Ca   Sc  Ti
        3.1,3.2,3.0,3.2,3.16,2.8,3.06,2.38,1.5,2.00, &
-                                !V    Cr   Mn   Fe   Co   Ni  Cu1+  Zn  Ga   Ge
+       !V    Cr   Mn   Fe   Co   Ni  Cu1+  Zn  Ga   Ge
        1.91,1.89,1.93,1.84,1.57,1.50,1.88,1.55,2.00,2.50, &
-                                !As   Se    Br   Kr   Rb  Sr    Y    Zr  Nb    Mo
+       !As   Se    Br   Kr   Rb  Sr    Y    Zr  Nb    Mo
        3.00,3.00,3.44,3.00,3.25,2.70,1.75,2.00,2.00,2.00, &
-                                !Tc    Ru   Rh  Pd   Ag    Cd   In   Sn   Sb  Te
+       !Tc    Ru   Rh  Pd   Ag    Cd   In   Sn   Sb  Te
        2.00,2.00,2.00,2.00,2.25,1.98,2.45,2.44,3.00,3.70, &
-                                !I    Xe   Cs   Ba   La   Hf   Ta   W    Re   Ir 
+       !I    Xe   Cs   Ba   La   Hf   Ta   W    Re   Ir 
        3.80,3.55,3.58,2.92,2.30,3.00,3.00,3.00,3.00,3.00, &
-                                !Pt   Au   Hg   Tl   Pb   Bi   Po   At   Rn   Fr
+       !Pt   Au   Hg   Tl   Pb   Bi   Po   At   Rn   Fr
        3.00,1.77,1.94,2.00,2.55,3.00,3.00,3.00,3.00,3.00, &
-                                !Ra   Ac
+       !Ra   Ac
        3.50,3.00]
   !     open archive (this is actually done in subroutine solvout
   !     open (43,file='cs.arc',access ='append')
@@ -259,14 +260,14 @@ program main
 
      !     Initialize parameters and read in the option file (vdw.par).
      !call readopt (iterld)
+     iprint = 0
      call readopt(iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
           rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
 
      !     Calculate solvation (LD method).
      !     Set parameter iprint to 1, if more output is needed (for debug)
-     iprint = 0
      !     call dg_ld (iterld,iprint)
-     call dg_ld (iterld,iprint,evqdq,ecor,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, & 
+     call dg_ld (iterld,iprint,evqdq,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, & 
           pcenter,phobsl,q,q_gas,q_mp2,rg,rg_inner,rg_reg1,rgim,rpi, &
           rzcut,slgvn,tds0,vdwc6,vdwsl,xw,atom,n_reg1, &
           drg,drg_inner,rdcutl,out_cut,itl)

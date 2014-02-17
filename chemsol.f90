@@ -50,7 +50,7 @@ contains
     ir(j) = idum
     return
   end function ran2
-  real function entropy(mass)
+  real(8) function entropy(mass)
     ! molecular mass 
     real(8), intent(in) :: mass
     real(8) :: T,V,m,n,S1,S2,S
@@ -1393,21 +1393,29 @@ contains
 1013 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3)
 1014 format(5x,i3,4x,f12.3,5x,f12.3,5x,f12.3//)
   end subroutine sci_lgvn
-  subroutine dg_ld (iterld,iprint,evqdq,ecor,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, &
+  subroutine dg_ld (iterld,iprint,evqdq,elgwa,evdw,elgvn,ephob,etds,ebw,clgvn,dxp0,ephil1,ephil2,iacw,ndxp, &
        pcenter,phobsl,q,q_gas,q_mp2,rg,rg_inner,rg_reg1,rgim,rpi, &
        rzcut,slgvn,tds0,vdwc6,vdwsl,xw,atom,n_reg1, &
        drg,drg_inner,rdcutl,out_cut,itl)
-    real(8),intent(inout) :: evqdq,ecor,elgwa,elgvn,evdw,ephob,etds,ebw
-    real(8),intent(in) :: dxp0(3),ephil1,ephil2,clgvn,pcenter(3),q(mxatm),q_gas(mxatm),q_mp2(mxatm)
-    real(8),intent(in) :: rg,rg_inner,rg_reg1,phobsl,rgim,rpi(mxatm),rzcut,slgvn,vdwc6(82),vdwsl
-    real(8),intent(in) :: xw(3,mxatm),drg,drg_inner,rdcutl,out_cut,tds0
-    integer,intent(in) :: iterld,iprint,ndxp,iacw(mxatm),n_reg1,itl
+    real(8),intent(inout) :: ebw,elgvn,elgwa,ephob,etds,evdw,evqdq
+    ! parameters in vdw.par, except for srp which seems to not be used in the rest of the program
+    integer,intent(in) :: iterld,ndxp
+    real(8),intent(in) :: dxp0(3),clgvn,slgvn,tds0
+    ! rp is used to generate rpi
+    real(8),intent(in) :: vdwc6(82)
+    real(8),intent(in) :: vdwsl,phobsl,ephil1,ephil2,rzcut
+    
+    real(8),intent(in) :: pcenter(3),q(mxatm),q_gas(mxatm),q_mp2(mxatm)
+    real(8),intent(in) :: rg,rg_inner,rg_reg1,rgim,rpi(mxatm)
+    real(8),intent(in) :: xw(3,mxatm),drg,drg_inner,rdcutl,out_cut
+    integer,intent(in) :: iprint,iacw(mxatm),n_reg1,itl
     character(8),intent(in) :: atom(mxatm)
     real(8) :: esum,atomfs(mxatm),temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
          center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
     real(8) :: oshift(3*mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),tds,temp_center(mxcenter,3)
     real(8) :: vbornx_result
     real(8) :: xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
+    real(8) :: ecor ! used to be an input variable, not really used in the rest of the program
     integer :: i,j,iz(mxlgvn),n_inner,ndipole
     integer :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn),nvol(mxcenter)
     integer(2) :: isd(mxlgvn),jp(mxpair),jp2(mxpair2)
@@ -1489,9 +1497,11 @@ contains
 112 format(i3,5x,a8,f9.3) 
   end subroutine dg_ld
   subroutine solvout (iterld,iprint,do_gas,evqdq,elgwa,etds,evdw,ebw,elgvn,ephob,molname,ssname)
-    integer,intent(in) :: iterld,iprint
+    integer,intent(in) :: iterld ! parameter from vdw.par
+    integer,intent(in) :: iprint
     logical,intent(in) :: do_gas
-    real(8),intent(in) :: evqdq,elgwa,etds,evdw,ebw,elgvn,ephob
+    ! all inout variables from 
+    real(8),intent(in) :: ebw,elgvn,elgwa,ephob,etds,evdw,evqdq ! all inout variables in dg_ld, used to also have ecor as a input argument
     character(13),intent(in) :: molname
     character(4),intent(in) :: ssname
     real(8) :: erelax,dgsolv,dgsolvni
@@ -1583,13 +1593,21 @@ contains
   end subroutine solvout
   subroutine readopt (iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
        rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
-    real(8),intent(inout) :: vdwc6(82),dxp0(3),clgvn,slgvn,tds0
-    real(8),intent(inout) :: rp(82),vdwsl,phobsl,ephil1,ephil2,rzcut
+    ! parameters in vdw.par, except for srp which seems to not be used in the rest of the program
+    integer,intent(inout) :: iterld,ndxp
+    real(8),intent(inout) :: dxp0(3),clgvn,slgvn,tds0
+    real(8),intent(inout) :: rp(82)
+    real(8),intent(inout) :: vdwc6(82)
+    real(8),intent(inout) :: vdwsl,phobsl,ephil1,ephil2,rzcut
+    
     real(8),intent(inout) :: rpi(mxatm),pcenter(3),rg_reg1,rg,rg_inner,rgim
-    integer,intent(inout) :: iterld,ndxp,iacw(mxatm)
+    integer,intent(inout) :: iacw(mxatm)
+    
     real(8),intent(in) :: xw(3,mxatm),q(mxatm),q_gas(mxatm),drg
     integer,intent(in) :: n_reg1,iprint,latom(mxatm)
+    
     integer :: i,j,nrp,jmin
+    ! srp is not used again, even though it is in vdw.par
     real(8) :: srp,r2min,r2,dmax
     character(2) :: rpinp
     !....................................................................

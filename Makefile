@@ -11,13 +11,7 @@ main: $(objects)
 %.o: %.f
 	$(FC) $(FCFLAGS) -c $<
 
-.PHONY: clean test diff
+.PHONY: clean
 
 clean: 
 	rm -f *.o *.mod *.MOD 
-
-test: 
-	time ./main vdw.par test1.cs >& test1_main.out & 
-
-diff: 	
-	diff --side-by-side --suppress-common-lines test1.log test1_main.out 

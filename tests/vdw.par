@@ -1,0 +1,18 @@
+ 1 20  0.20  0.90  0.48  1.4   ! iterld, ndxp, dxp0(1), clgvn, slgvn, tds0     (i2,i3,4f6.3)
+ 0.88  2.65  3.00  2.65  2.65  ! srp(H), rp(C0), rp(C1), rp(N0), rp(N1)  (5f6.3)
+ 2.32  2.65  2.80  3.20  3.20  ! rp(O0), rp(O1), rp(O2), rp(P), rp(S0)   (5f6.3)
+ 2.46  3.16                    ! rp(F), rp(Cl)       (5f6.3)
+ 1.0   1.0   0.5   0.5   1.0   ! vdwc6: H, C0, N, O, P
+ 1.0   1.0                     ! vdwc6: S, C1
+ 0.120 0.138 0.002 0.038 1.5   ! vdwsl, 10*phobsl, ephil1, ephil2, rzcut (5f6.3)
+
+iterld = 0 -------> noniterative LD calculation (NLD)
+         1 -------> iterative LD calculation
+ndxp -------------> dG is calculated as an average over ndxp grids that differ
+                    in their positions wrt the solute.
+dxp0(1) ----------> grid shift
+slgvn ------------> scale factor for iterative lgvn energy
+slgvn*clgvn-------> scale factor for noniterative lgvn energy
+rp   -------------> Van der Waals radii of atoms
+vdwc6 ------------> London coefficients
+

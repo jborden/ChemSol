@@ -16,7 +16,8 @@ program main
   real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
   real(8) :: clgvn, slgvn
   real(8) :: pcenter(3) 
-  character(8):: atom(mxatm),dumm1
+  character(8),dimension(:),allocatable :: atom !atom(mxatm)
+  character(8):: dumm1
   character(13) :: molname
   character(4) :: ssname
   character(256) :: fname
@@ -102,6 +103,7 @@ program main
   read (45,*) n_reg1, ngeom
   imp2 = 0 
   read(45,'(a4)') ssname
+  allocate(atom(n_reg1))
   do i=1,n_reg1
      read (45,1000) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
      !     Gaussian atom types (nuclear charge) are mapped onto ChemSol ones (iacw). 

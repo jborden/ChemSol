@@ -3,9 +3,7 @@ program main
   integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
   integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
   integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
-  real(8) :: xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
-       rpi(mxatm), &
-       q_gas(mxatm),q_mp2(mxatm)
+  real(8) :: rp(82),vdwc6(82)
   ! ecor was removed as it seems to be local to dg_ld
   real(8) :: ebw,elgvn,elgwa,erelax,evdw,evqdq
   real(8) :: rg_reg1, rgim
@@ -15,8 +13,14 @@ program main
   real(8) :: ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
   real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
   real(8) :: clgvn, slgvn
-  real(8) :: pcenter(3) 
-  character(8),dimension(:),allocatable :: atom !atom(mxatm)
+  real(8) :: pcenter(3)
+  ! core topology
+  character(3),allocatable :: atom(:)  ! Chemical Symbol
+  real(8),allocatable :: zan(:),q(:),xw(:,:) ! atomic number, atomic charge, cartesian coordinates of nucleus
+  ! Van der Waal radii topology
+  real(8),allocatable :: rpi(:)
+  ! optional charge topology
+  real(8),allocatable :: q_gas(:),q_mp2(:)
   character(8):: dumm1
   character(13) :: molname
   character(4) :: ssname
@@ -103,15 +107,20 @@ program main
   read (45,*) n_reg1, ngeom
   imp2 = 0 
   read(45,'(a4)') ssname
+  
   allocate(atom(n_reg1))
+  allocate(zan(n_reg1),q(n_reg1),xw(3,n_reg1))
+
   do i=1,n_reg1
-     read (45,1000) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
+     ! read (45,1000) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
+     ! just read in the line, no need for special formatting
+     read (45,*) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
      !     Gaussian atom types (nuclear charge) are mapped onto ChemSol ones (iacw). 
+     ! write (*,*) atom(i),zan(i),q(i),xw(1,i),xw(2,i),xw(3,i)
      iacp(i)=int(zan(i))
      iacw(i)=iac_conv(iacp(i))
      latom(i)=i
   end do
-
   !     Calculate the molecular mass (a.u.)
   amas = 0.0d0
   do i=1,n_reg1
@@ -135,6 +144,7 @@ program main
   !     are not affected by the presence/absence of the gas_phase charges 
   !     in the input file.
 
+  allocate(q_gas(n_reg1))
 
   do_gas = .false.
   read (45,'(a3)') relax
@@ -159,6 +169,8 @@ program main
   !     Note that in cs2.1 imp2 is always zero.
   !     The unused code is still kept in case a construct like this is needed in
   !     future.
+  allocate(q_mp2(n_reg1))
+
   if(imp2.eq.1) then
      read (45,'(a3)') corr
      do i=1,n_reg1
@@ -219,6 +231,7 @@ program main
   !      of ChemSol atom types (that differ in VdW radii).
   do i=1,n_reg1 
      if (iacw(i).ne.1) then
+        ! write (*,*) atom(i)(2:2) debug
         if (atom(i)(2:2) .eq. '1') iacw(i) = iacw(i)+1
         if (atom(i)(2:2) .eq. '2') iacw(i) = iacw(i)+2
         if (atom(i)(2:2) .eq. '3') iacw(i) = iacw(i)+3
@@ -263,6 +276,7 @@ program main
      !     Initialize parameters and read in the option file (vdw.par).
      !call readopt (iterld)
      iprint = 0
+     allocate(rpi(n_reg1))
      call readopt(iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
           rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
 
@@ -277,13 +291,13 @@ program main
      !     write out solvation energy
      !call solvout (iterld,do_gas)
      call solvout (iterld,iprint,do_gas,evqdq,elgwa,etds,evdw,ebw,elgvn,ephob,molname,ssname)
-
      close (44)
+     ! deallocate molecular topology
+     deallocate(atom,zan,q,xw,rpi,q_gas,q_mp2)
      !30    continue
   end do
-
   close (43)
   close (45)
-1000 format(1x,A8,F8.1,2F10.4,3F9.4)
+1000 format(1x,A3,F8.1,2F10.4,3F9.4)
 2000 format(i3)
 end program main

@@ -140,7 +140,7 @@ contains
     integer(2),intent(inout) :: isd(mxlgvn)
     integer,intent(in) :: iflag,n_reg1,ientro,iacw(mxatm)
     real(8),intent(inout) :: evdwl(mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),xl(3,mxlgvn)
-    real(8),intent(in) :: rg,drg,drg_inner,rg_inner,rgim,rpi(mxatm),xw(3,mxatm),center1(3),vdwc6(82),vdwsl,q(mxatm)
+    real(8),intent(in) :: rg,drg,drg_inner,rg_inner,rgim,rpi(*),xw(3,*),center1(3),vdwc6(82),vdwsl,q(*)
 
     character(8),intent(in) :: atom(mxatm)
     integer :: ns,i0,i1,i,limit_inner,limit_outer,mid_inner,mid_outer,no,index
@@ -783,22 +783,8 @@ contains
     return
   end subroutine mu_mu_l
   function vatom_f (ndipole,iterld,iprint,n_reg1,xl,xw,xmua,q,q_gas,q_mp2,slgvn,clgvn) result (vatom_result)
-    !implicit Real*8 (a-h,o-z)
-    !parameter (mxlgvn=10000)
-    !parameter (mxatm=500)
-    ! common /pcgrid/ drg,rg,dxp0(3), &
-    !      rg_inner,drg_inner
-    ! common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
-    !      n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), &
-    !      q_gas(mxatm),q_mp2(mxatm)
-    ! common /scrat8/ xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn), &
-    !      da(3,mxlgvn)
-    ! common /lra/ clgvn, slgvn
-    ! character*1 dash(72)
-    ! dimension vq(mxatm)
-    ! dimension rl(3)
     integer,intent(in)    :: ndipole,iterld,iprint,n_reg1
-    real(8),intent(in)    :: xl(3,mxlgvn),xw(3,mxatm),xmua(3,mxlgvn),q_gas(mxatm),q(mxatm),q_mp2(mxatm),slgvn,clgvn
+    real(8),intent(in)    :: xl(3,mxlgvn),xw(3,*),xmua(3,mxlgvn),q_gas(*),q(*),q_mp2(*),slgvn,clgvn
     !real(8),intent(inout) :: cor,vqdq
     integer :: i,j,k
     real(8) :: vqq,vq(mxatm),r1,r2,sp,rl(3),dq_gas,dq_mp2,vatom_result(2)
@@ -966,22 +952,8 @@ contains
     return
   end function elgvn_ave_f
   function vbornx_f(nd_lgvn,eb,n_inner,center1,rg_reg1,rgim,n_reg1,q,xw) result (vbornx_result)
-    ! implicit Real*8 (a-h,o-z)
-    ! parameter (mxlgvn=5000)
-    ! parameter (mxatm=500)
-    ! common /pcgrid/ drg,rg,dxp0(3), &
-    !      rg_inner,drg_inner
-    ! common /reg1/xw(3,mxatm),zan(mxatm),q(mxatm),rp(82),vdwc6(82), &
-    !      n_inner,n_reg1,latom(mxatm),iacw(mxatm),rpi(mxatm), & 
-    !      q_gas(mxatm),q_mp2(mxatm)
-    ! common /born/ rg_reg1, rgim
-    ! character*1 dash(72)
-    ! dimension center1(3)
-    ! data dash/72*'-'/
-    !......................................................................
-    ! write(6,201) dash ! commented out for now
     integer,intent(in) :: nd_lgvn,n_inner,n_reg1
-    real(8),intent(in) :: q(mxatm),xw(3,mxatm),rg_reg1,rgim
+    real(8),intent(in) :: q(*),xw(3,*),rg_reg1,rgim
     real(8),intent(in) :: eb,center1(3)
 
     real(8) :: vbornx_result
@@ -1058,8 +1030,8 @@ contains
     integer,intent(inout) :: ndipole,iz(mxlgvn),nvol(mxcenter),n_inner
     integer,intent(in) :: ientro,iacw(mxatm),iterld,n_reg1
     integer(2),intent(inout) :: isd(mxlgvn)
-    real(8),intent(in) :: xw(3,mxatm),drg_inner,drg,rzcut,q(mxatm),ephil1,ephil2,vdwc6(82),vdwsl,clgvn
-    real(8),intent(in) :: center1(3),rg,rg_inner,rgim,rpi(mxatm),slgvn
+    real(8),intent(in) :: xw(3,*),drg_inner,drg,rzcut,q(*),ephil1,ephil2,vdwc6(82),vdwsl,clgvn
+    real(8),intent(in) :: center1(3),rg,rg_inner,rgim,rpi(*),slgvn
     character(8),intent(in) :: atom(mxatm)
 
     real(8) :: sres,tds,efn_max,vdwsur(mxatm),gri_sp,elgvn_i,efn,vlgvn_result(3),fma,elgvna,ddd,dddx,dddy,dddz,epot,rx,ry,rz, &
@@ -1405,11 +1377,12 @@ contains
     real(8),intent(in) :: vdwc6(82)
     real(8),intent(in) :: vdwsl,phobsl,ephil1,ephil2,rzcut
     
-    real(8),intent(in) :: pcenter(3),q(mxatm),q_gas(mxatm),q_mp2(mxatm)
-    real(8),intent(in) :: rg,rg_inner,rg_reg1,rgim,rpi(mxatm)
-    real(8),intent(in) :: xw(3,mxatm),drg,drg_inner,rdcutl,out_cut
+    real(8),intent(in) :: pcenter(3),q(*),q_gas(*),q_mp2(*)
+    real(8),intent(in) :: rg,rg_inner,rg_reg1,rgim,rpi(*)
+    real(8),intent(in) :: xw(3,*)
+    real(8),intent(in) :: drg,drg_inner,rdcutl,out_cut
     integer,intent(in) :: iprint,iacw(mxatm),n_reg1,itl
-    character(8),intent(in) :: atom(mxatm)
+    character(8),intent(in) :: atom(*)
     real(8) :: esum,atomfs(mxatm),temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
          center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
     real(8) :: oshift(3*mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),tds,temp_center(mxcenter,3)
@@ -1498,12 +1471,12 @@ contains
   end subroutine dg_ld
   subroutine solvout (iterld,iprint,do_gas,evqdq,elgwa,etds,evdw,ebw,elgvn,ephob,molname,ssname)
     integer,intent(in) :: iterld ! parameter from vdw.par
-    integer,intent(in) :: iprint
+    integer,intent(in) :: iprint ! parameter in main
+    character(13),intent(in) :: molname ! parameter in main
+    character(4),intent(in) :: ssname ! parameter in main
     logical,intent(in) :: do_gas
     ! all inout variables from 
     real(8),intent(in) :: ebw,elgvn,elgwa,ephob,etds,evdw,evqdq ! all inout variables in dg_ld, used to also have ecor as a input argument
-    character(13),intent(in) :: molname
-    character(4),intent(in) :: ssname
     real(8) :: erelax,dgsolv,dgsolvni
     !      elgvn.......noniterative lgvn energy (using distance-dependent dielectric)
     !      elgwa......iterative lgvn energy 
@@ -1600,10 +1573,10 @@ contains
     real(8),intent(inout) :: vdwc6(82)
     real(8),intent(inout) :: vdwsl,phobsl,ephil1,ephil2,rzcut
     
-    real(8),intent(inout) :: rpi(mxatm),pcenter(3),rg_reg1,rg,rg_inner,rgim
+    real(8),intent(inout) :: rpi(*),pcenter(3),rg_reg1,rg,rg_inner,rgim
     integer,intent(inout) :: iacw(mxatm)
     
-    real(8),intent(in) :: xw(3,mxatm),q(mxatm),q_gas(mxatm),drg
+    real(8),intent(in) :: xw(3,*),q(*),q_gas(*),drg
     integer,intent(in) :: n_reg1,iprint,latom(mxatm)
     
     integer :: i,j,nrp,jmin

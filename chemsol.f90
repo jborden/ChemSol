@@ -138,7 +138,7 @@ contains
     !implicit Real*8 (a-h,o-z)
     integer,intent(inout) :: nld,nvol(mxcenter),n_inner,iz(mxlgvn)
     integer(2),intent(inout) :: isd(mxlgvn)
-    integer,intent(in) :: iflag,n_reg1,ientro,iacw(mxatm)
+    integer,intent(in) :: iflag,n_reg1,ientro,iacw(*)
     real(8),intent(inout) :: evdwl(mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),xl(3,mxlgvn)
     real(8),intent(in) :: rg,drg,drg_inner,rg_inner,rgim,rpi(*),xw(3,*),center1(3),vdwc6(82),vdwsl,q(*)
 
@@ -1028,7 +1028,7 @@ contains
     real(8),intent(inout) :: elgvn,fsurfa(mxcenter),xd(3,mxlgvn),da(3,mxlgvn),xmua(3,mxlgvn),atomfs(mxatm),evdwl(mxcenter)
     real(8),intent(inout) :: xl(3,mxlgvn),rz1(mxlgvn),rz_vdw(mxlgvn)
     integer,intent(inout) :: ndipole,iz(mxlgvn),nvol(mxcenter),n_inner
-    integer,intent(in) :: ientro,iacw(mxatm),iterld,n_reg1
+    integer,intent(in) :: ientro,iacw(*),iterld,n_reg1
     integer(2),intent(inout) :: isd(mxlgvn)
     real(8),intent(in) :: xw(3,*),drg_inner,drg,rzcut,q(*),ephil1,ephil2,vdwc6(82),vdwsl,clgvn
     real(8),intent(in) :: center1(3),rg,rg_inner,rgim,rpi(*),slgvn
@@ -1381,7 +1381,7 @@ contains
     real(8),intent(in) :: rg,rg_inner,rg_reg1,rgim,rpi(*)
     real(8),intent(in) :: xw(3,*)
     real(8),intent(in) :: drg,drg_inner,rdcutl,out_cut
-    integer,intent(in) :: iprint,iacw(mxatm),n_reg1,itl
+    integer,intent(in) :: iprint,iacw(*),n_reg1,itl
     character(8),intent(in) :: atom(*)
     real(8) :: esum,atomfs(mxatm),temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
          center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
@@ -1574,7 +1574,7 @@ contains
     real(8),intent(inout) :: vdwsl,phobsl,ephil1,ephil2,rzcut
     
     real(8),intent(inout) :: rpi(*),pcenter(3),rg_reg1,rg,rg_inner,rgim
-    integer,intent(inout) :: iacw(mxatm)
+    integer,intent(inout) :: iacw(*)
     
     real(8),intent(in) :: xw(3,*),q(*),q_gas(*),drg
     integer,intent(in) :: n_reg1,iprint

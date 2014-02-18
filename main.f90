@@ -14,6 +14,7 @@ program main
   real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
   real(8) :: clgvn, slgvn
   real(8) :: pcenter(3)
+
   ! core topology
   character(3),allocatable :: atom(:)  ! Chemical Symbol
   real(8),allocatable :: zan(:),q(:),xw(:,:) ! atomic number, atomic charge, cartesian coordinates of nucleus
@@ -21,6 +22,9 @@ program main
   real(8),allocatable :: rpi(:)
   ! optional charge topology
   real(8),allocatable :: q_gas(:),q_mp2(:)
+  ! chemsol atom type topology
+  integer,allocatable :: iacw(:)
+
   character(8):: dumm1
   character(13) :: molname
   character(4) :: ssname
@@ -30,17 +34,7 @@ program main
   character(3) :: relax 
   logical :: do_gas
   !integer ::iac_conv (89)
-  integer :: n_reg1,n_inner,iacw(mxatm)
-  integer,dimension(89) :: iac_conv = [1,2, &
-       3,4,5,6,9,13,16,17, &
-       18,19,20,21,22,24,25,26, &
-       27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44, &
-       45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62, &
-       63,64,65, &
-       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, &
-       66,67,68,69,70,71,72,73,74,75,76,77,78,79,80, &
-       81,82]
-
+  integer :: n_reg1,n_inner
   !      ChemSol atom types: 
   !       1-H0, 2-He, 3-Li, 4-Be, 5-B, 6-C0, 7-C1, 8-C2, 9-N0, 10-N1,
   !       11-N2, 12-X, 13-O0, 14-O1, 15-O2, 16-F, 17-Ne, 18-Na, 19-Mg, 20-Al,
@@ -51,6 +45,15 @@ program main
   !       61-I, 62-Xe, 63-Cs, 64-Ba, 65-La, 66-Hf, 67-Ta, 68-W, 69-Re, 70-Os, 
   !       71-Ir, 72-Pt, 73-Au, 74-Hg, 75-Tl, 76-Pb, 77-Bi, 78-Po, 79-At, 80-Rn, 
   !       81-Fr, 82-Ra.
+  integer,dimension(89) :: iac_conv = [1,2, &
+       3,4,5,6,9,13,16,17, &
+       18,19,20,21,22,24,25,26, &
+       27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44, &
+       45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62, &
+       63,64,65, &
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, &
+       66,67,68,69,70,71,72,73,74,75,76,77,78,79,80, &
+       81,82]
 
   integer,dimension(88)::mass = [1,4, &
        7,9,11,12,14,16,19,20, &
@@ -108,9 +111,8 @@ program main
   imp2 = 0 
   read(45,'(a4)') ssname
   
-  allocate(atom(n_reg1))
-  allocate(zan(n_reg1),q(n_reg1),xw(3,n_reg1))
-
+  allocate(atom(n_reg1),zan(n_reg1),q(n_reg1),xw(3,n_reg1))
+  allocate(iacw(n_reg1))
   do i=1,n_reg1
      ! read (45,1000) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
      ! just read in the line, no need for special formatting
@@ -291,7 +293,7 @@ program main
      call solvout (iterld,iprint,do_gas,evqdq,elgwa,etds,evdw,ebw,elgvn,ephob,molname,ssname)
      close (44)
      ! deallocate molecular topology
-     deallocate(atom,zan,q,xw,rpi,q_gas,q_mp2)
+     deallocate(atom,zan,q,xw,rpi,q_gas,q_mp2,iacw)
      !30    continue
   end do
   close (43)

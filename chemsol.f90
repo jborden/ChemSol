@@ -1565,7 +1565,7 @@ contains
 117 format(' dG                      ',10x,f20.2)
   end subroutine solvout
   subroutine readopt (iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
-       rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
+       rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,q,q_gas,n_reg1,drg,iprint)
     ! parameters in vdw.par, except for srp which seems to not be used in the rest of the program
     integer,intent(inout) :: iterld,ndxp
     real(8),intent(inout) :: dxp0(3),clgvn,slgvn,tds0
@@ -1577,7 +1577,7 @@ contains
     integer,intent(inout) :: iacw(mxatm)
     
     real(8),intent(in) :: xw(3,*),q(*),q_gas(*),drg
-    integer,intent(in) :: n_reg1,iprint,latom(mxatm)
+    integer,intent(in) :: n_reg1,iprint
     
     integer :: i,j,nrp,jmin
     ! srp is not used again, even though it is in vdw.par
@@ -1669,7 +1669,7 @@ contains
 
     write(6,95)
     do i=1,n_reg1
-       write (6,102) latom(i),(xw(j,i),j=1,3),q(i),q_gas(i), &
+       write (6,102) i,(xw(j,i),j=1,3),q(i),q_gas(i), &
             iacw(i), rpi(i),vdwc6(iacw(i))
     enddo
     !write(6,103) dash

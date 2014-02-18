@@ -30,7 +30,7 @@ program main
   character(3) :: relax 
   logical :: do_gas
   !integer ::iac_conv (89)
-  integer :: iacp(mxatm),n_reg1,n_inner,iacw(mxatm),latom(mxatm)
+  integer :: iacp(mxatm),n_reg1,n_inner,iacw(mxatm)
   integer,dimension(89) :: iac_conv = [1,2, &
        3,4,5,6,9,13,16,17, &
        18,19,20,21,22,24,25,26, &
@@ -119,7 +119,6 @@ program main
      ! write (*,*) atom(i),zan(i),q(i),xw(1,i),xw(2,i),xw(3,i)
      iacp(i)=int(zan(i))
      iacw(i)=iac_conv(iacp(i))
-     latom(i)=i
   end do
   !     Calculate the molecular mass (a.u.)
   amas = 0.0d0
@@ -278,7 +277,7 @@ program main
      iprint = 0
      allocate(rpi(n_reg1))
      call readopt(iterld,vdwc6,dxp0,clgvn,slgvn,tds0,rp,vdwsl,phobsl,ephil1,ephil2,rzcut, &
-          rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,latom,q,q_gas,n_reg1,drg,iprint)
+          rpi,pcenter,rg_reg1,rg,rg_inner,rgim,ndxp,iacw,xw,q,q_gas,n_reg1,drg,iprint)
 
      !     Calculate solvation (LD method).
      !     Set parameter iprint to 1, if more output is needed (for debug)

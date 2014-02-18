@@ -1,19 +1,36 @@
 program main
   use chemsol, only: entropy,readopt,dg_ld,solvout 
   integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
-  integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
   integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
-  real(8) :: rp(82),vdwc6(82)
-  ! ecor was removed as it seems to be local to dg_ld
-  real(8) :: ebw,elgvn,elgwa,erelax,evdw,evqdq
-  real(8) :: rg_reg1, rgim
-  real(8) :: drg,rg,dxp0(3),rg_inner,drg_inner
-  real(8) :: rdcutl,out_cut
-  integer :: ndxp,itl,itp
-  real(8) :: ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
-  real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
-  real(8) :: clgvn, slgvn
-  real(8) :: pcenter(3)
+  !      ChemSol atom types: 
+  !       1-H0, 2-He, 3-Li, 4-Be, 5-B, 6-C0, 7-C1, 8-C2, 9-N0, 10-N1,
+  !       11-N2, 12-X, 13-O0, 14-O1, 15-O2, 16-F, 17-Ne, 18-Na, 19-Mg, 20-Al,
+  !       21-Si, 22-P, 23-X, 24-S, 25-Cl, 26-Ar, 27-K, 28-Ca, 29-Sc, 30-Ti, 
+  !       31-V, 32-Cr, 33-Mn, 34-Fe, 35-Co, 36-Ni, 37-Cu, 38-Zn, 39-Ga,40-Ge,
+  !       41-As, 42-Se,43-Br, 44-Kr, 45-Rb, 46-Sr, 47-Y, 48-Zr, 49-Nb, 50-Mo, 
+  !       51-Tc, 52-Ru, 53-Rh, 54-Pd, 55-Ag, 56-Cd, 57-In, 58-Sn, 59-Sb, 60-Te, 
+  !       61-I, 62-Xe, 63-Cs, 64-Ba, 65-La, 66-Hf, 67-Ta, 68-W, 69-Re, 70-Os, 
+  !       71-Ir, 72-Pt, 73-Au, 74-Hg, 75-Tl, 76-Pb, 77-Bi, 78-Po, 79-At, 80-Rn, 
+  !       81-Fr, 82-Ra.
+  integer,dimension(89),parameter :: iac_conv = [1,2, &
+       3,4,5,6,9,13,16,17, &
+       18,19,20,21,22,24,25,26, &
+       27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44, &
+       45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62, &
+       63,64,65, &
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, &
+       66,67,68,69,70,71,72,73,74,75,76,77,78,79,80, &
+       81,82]
+
+  integer,dimension(88),parameter :: mass = [1,4, &
+       7,9,11,12,14,16,19,20, &
+       23,24,27,28,31,32,35,40, &
+       39,40,45,48,51,52,55,56,59,59,64,65,70,73,75,79,80,84, &
+       85,88,89,91,93,96,97,101,103,106,108,112,115,119,122,128,127,131, &
+       132,137,139, &
+       140,141,144,145,150,152,157,159,163,165,167,169,173,175, &
+       178,181,184,186,190,192,195,197,201,204,207,208,209,210,222, &
+       223,226]
 
   ! core topology
   character(3),allocatable :: atom(:)  ! Chemical Symbol
@@ -25,59 +42,9 @@ program main
   ! chemsol atom type topology
   integer,allocatable :: iacw(:)
 
-  character(8):: dumm1
-  character(13) :: molname
-  character(4) :: ssname
-  character(256) :: fname
-  character(256) :: input_file_name
-  character(256) :: vdw_name
-  character(3) :: relax 
-  logical :: do_gas
-  !integer ::iac_conv (89)
-  integer :: n_reg1,n_inner
-  !      ChemSol atom types: 
-  !       1-H0, 2-He, 3-Li, 4-Be, 5-B, 6-C0, 7-C1, 8-C2, 9-N0, 10-N1,
-  !       11-N2, 12-X, 13-O0, 14-O1, 15-O2, 16-F, 17-Ne, 18-Na, 19-Mg, 20-Al,
-  !       21-Si, 22-P, 23-X, 24-S, 25-Cl, 26-Ar, 27-K, 28-Ca, 29-Sc, 30-Ti, 
-  !       31-V, 32-Cr, 33-Mn, 34-Fe, 35-Co, 36-Ni, 37-Cu, 38-Zn, 39-Ga,40-Ge,
-  !       41-As, 42-Se,43-Br, 44-Kr, 45-Rb, 46-Sr, 47-Y, 48-Zr, 49-Nb, 50-Mo, 
-  !       51-Tc, 52-Ru, 53-Rh, 54-Pd, 55-Ag, 56-Cd, 57-In, 58-Sn, 59-Sb, 60-Te, 
-  !       61-I, 62-Xe, 63-Cs, 64-Ba, 65-La, 66-Hf, 67-Ta, 68-W, 69-Re, 70-Os, 
-  !       71-Ir, 72-Pt, 73-Au, 74-Hg, 75-Tl, 76-Pb, 77-Bi, 78-Po, 79-At, 80-Rn, 
-  !       81-Fr, 82-Ra.
-  integer,dimension(89) :: iac_conv = [1,2, &
-       3,4,5,6,9,13,16,17, &
-       18,19,20,21,22,24,25,26, &
-       27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44, &
-       45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62, &
-       63,64,65, &
-       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, &
-       66,67,68,69,70,71,72,73,74,75,76,77,78,79,80, &
-       81,82]
-
-  integer,dimension(88)::mass = [1,4, &
-       7,9,11,12,14,16,19,20, &
-       23,24,27,28,31,32,35,40, &
-       39,40,45,48,51,52,55,56,59,59,64,65,70,73,75,79,80,84, &
-       85,88,89,91,93,96,97,101,103,106,108,112,115,119,122,128,127,131, &
-       132,137,139, &
-       140,141,144,145,150,152,157,159,163,165,167,169,173,175, &
-       178,181,184,186,190,192,195,197,201,204,207,208,209,210,222, &
-       223,226]
-  ! from blockdata
-  rg = 26.0
-  drg = 3.0
-  drg_inner = 1.0
-  rdcutl = 6.1
-  out_cut = 16.0
-  dxp0 = [0.0,0.0,0.0]
-  rgim = 2.0
-  !ndxp = 10
-  itl = 399
-  itp = 5
-  rzcut = 1.1
-  !      H   He  Li   Be   B    C    C1  C2   N    N1
-  rp = [2.3,2.3,2.15,2.00,2.40,2.65,3.0,3.25,2.65,2.85, &
+  real(8),dimension(82) :: &
+       !      H   He  Li   Be   B    C    C1  C2   N    N1
+       rp = [2.3,2.3,2.15,2.00,2.40,2.65,3.0,3.25,2.65,2.85, &
        !N2   X   O   O1  O2    F    Ne  Na   Mg  Al
        3.2,3.0,2.32,2.65,2.8,2.46,2.5,2.58,1.82,1.70, &
        !Si  P    X  S    Cl  Ar   K    Ca   Sc  Ti
@@ -94,6 +61,42 @@ program main
        3.00,1.77,1.94,2.00,2.55,3.00,3.00,3.00,3.00,3.00, &
        !Ra   Ac
        3.50,3.00]
+
+  real(8) :: vdwc6(82)
+  ! ecor was removed as it seems to be local to dg_ld
+  real(8) :: ebw,elgvn,elgwa,erelax,evdw,evqdq
+  real(8) :: rg_reg1, rgim
+  real(8) :: drg,rg,dxp0(3),rg_inner,drg_inner
+  real(8) :: rdcutl,out_cut
+  integer :: ndxp,itl,itp
+  real(8) :: ephil1,ephil2,ephob,fsurfa(mxcenter),evdwl(mxcenter)
+  real(8) :: vdwsl,rzcut,phobsl,tdsl(mxcenter),etds,amas,tds0
+  real(8) :: clgvn, slgvn
+  real(8) :: pcenter(3)
+
+
+  character(8):: dumm1
+  character(13) :: molname
+  character(4) :: ssname
+  character(256) :: fname
+  character(256) :: input_file_name
+  character(256) :: vdw_name
+  character(3) :: relax 
+  logical :: do_gas
+  !integer ::iac_conv (89)
+  integer :: n_reg1,n_inner
+  ! from blockdata
+  rg = 26.0
+  drg = 3.0
+  drg_inner = 1.0
+  rdcutl = 6.1
+  out_cut = 16.0
+  dxp0 = [0.0,0.0,0.0]
+  rgim = 2.0
+  !ndxp = 10
+  itl = 399
+  itp = 5
+  rzcut = 1.1
   !     open archive (this is actually done in subroutine solvout
   !     open (43,file='cs.arc',access ='append')
   !     open input file with vdw and grid options

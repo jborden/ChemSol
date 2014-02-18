@@ -30,7 +30,7 @@ program main
   character(3) :: relax 
   logical :: do_gas
   !integer ::iac_conv (89)
-  integer :: iacp(mxatm),n_reg1,n_inner,iacw(mxatm)
+  integer :: n_reg1,n_inner,iacw(mxatm)
   integer,dimension(89) :: iac_conv = [1,2, &
        3,4,5,6,9,13,16,17, &
        18,19,20,21,22,24,25,26, &
@@ -117,8 +117,7 @@ program main
      read (45,*) atom(i),zan(i),q(i),xw(1,i), xw(2,i), xw(3,i)
      !     Gaussian atom types (nuclear charge) are mapped onto ChemSol ones (iacw). 
      ! write (*,*) atom(i),zan(i),q(i),xw(1,i),xw(2,i),xw(3,i)
-     iacp(i)=int(zan(i))
-     iacw(i)=iac_conv(iacp(i))
+     iacw(i)=iac_conv(int(zan(i)))
   end do
   !     Calculate the molecular mass (a.u.)
   amas = 0.0d0

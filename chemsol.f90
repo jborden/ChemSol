@@ -576,7 +576,8 @@ contains
     vlgvn_result = [fma,tds,conv*fma*efn]
     return
   end function vlgvn_f
-  subroutine pairlistw(nd,dipx,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
+  ! subroutine pairlistw(nd,dipx,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
+  subroutine pairlistw(nd,xl,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
     ! integer,parameter  :: mxlgvn=10000
     ! integer,parameter  :: mxpair=5000000
     integer,parameter  :: mxpair2=10000000
@@ -584,7 +585,8 @@ contains
     integer,intent(inout) :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn)
     integer(2),intent(inout) :: jp(mxpair),jp2(mxpair2)
     integer(2),intent(in)    :: isd(mxlgvn)
-    real(8),intent(in) :: dipx(3,mxlgvn),rdcutl,out_cut
+    real(8),intent(in) :: rdcutl,out_cut
+    real(8),intent(in),allocatable :: xl(:,:)
     real(8)            :: rdcut2,out_cut2,r1,r2,r3,d2,rcoff,rcoff2
     integer            :: npair,npair2,npair3,ntotl,i,j,mask1
     rdcut2=rdcutl*rdcutl
@@ -604,9 +606,9 @@ contains
     do i=1,nd-1
        do j=i+1,nd
           if(isd(i).eq.1.and.isd(j).eq.1) cycle
-          r1=dipx(1,i)-dipx(1,j)
-          r2=dipx(2,i)-dipx(2,j)
-          r3=dipx(3,i)-dipx(3,j)
+          r1=xl(1,i)-xl(1,j)
+          r2=xl(2,i)-xl(2,j)
+          r3=xl(3,i)-xl(3,j)
           d2=r1*r1+r2*r2+r3*r3
           rcoff=2.5
           !  -- Switch on/off nearest neighbors for outer grid:
@@ -659,12 +661,13 @@ contains
          /,1x,'       pairs selected (long) - ',i10,' out of ', &
          f8.3,' A cutoff')
   end subroutine pairlistw
-  function newf_lcut_f(nd,l,da,ip,jp,xd,xmua) result (efa)
+  function newf_lcut_f(nd,l,da,ip,jp,xl,xmua) result (efa)
     !integer,parameter  :: mxlgvn = 10000
     ! integer,parameter  :: mxpair = 5000000
     integer,intent(in) :: nd,l,ip(0:mxlgvn)
     integer(2),intent(in) :: jp(mxpair)
-    real(8),intent(in) :: da(3,mxlgvn),xd(3,mxlgvn),xmua(3,mxlgvn)
+    real(8),intent(in) :: da(3,mxlgvn),xmua(3,mxlgvn)
+    real(8),intent(in),allocatable :: xl(:,:)
 
     real(8),dimension(3,mxlgvn) :: efa
     integer :: npair,i,i1,np,i2,index
@@ -688,9 +691,9 @@ contains
           do index=1,np
              npair=npair+1
              i2=jp(npair)
-             r1=xd(1,i1)-xd(1,i2)
-             r2=xd(2,i1)-xd(2,i2)
-             r3=xd(3,i1)-xd(3,i2)
+             r1=xl(1,i1)-xl(1,i2)
+             r2=xl(2,i1)-xl(2,i2)
+             r3=xl(3,i1)-xl(3,i2)
              d2=r1*r1+r2*r2+r3*r3
              c5=-1./(d2*d2*dsqrt(d2))
              rmu3a=3.*(r1*xmua(1,i2)+r2*xmua(2,i2)+r3*xmua(3,i2))
@@ -706,13 +709,14 @@ contains
     enddo
     return 
   end function newf_lcut_f
-  function updatelong_f(nd,l,ip2,jp2,xd,xmua) result (efal)
+  function updatelong_f(nd,l,ip2,jp2,xl,xmua) result (efal)
     !integer,parameter  :: mxlgvn  = 10000
     ! integer,parameter  :: mxpair  = 5000000
     integer,parameter  :: mxpair2 = 10000000
     integer,intent(in) :: nd,l,ip2(0:mxlgvn)
     integer(2),intent(in) :: jp2(mxpair2)
-    real(8),intent(in) :: xd(3,mxlgvn),xmua(3,mxlgvn)
+    real(8),intent(in) :: xmua(3,mxlgvn)
+    real(8),intent(in),allocatable :: xl(:,:)
     ! output var
     real(8) :: efal(3,mxlgvn)
     ! local vars
@@ -732,9 +736,9 @@ contains
           do index=1,np
              npair=npair+1
              j=jp2(npair)
-             r1=xd(1,i)-xd(1,j)
-             r2=xd(2,i)-xd(2,j)
-             r3=xd(3,i)-xd(3,j)
+             r1=xl(1,i)-xl(1,j)
+             r2=xl(2,i)-xl(2,j)
+             r3=xl(3,i)-xl(3,j)
              d2=r1*r1+r2*r2+r3*r3
              c5=-1.d0/(d2*d2*dsqrt(d2))
              rmu3a=3.*(r1*xmua(1,j)+r2*xmua(2,j)+r3*xmua(3,j))
@@ -1034,10 +1038,10 @@ contains
     !201 format(/1x,72a1//,' Estimation of the bulk energy using Born ', & 
     !         'equation')
   end function vbornx_f
-  subroutine lgvnx(center1,elgvn,ndipole,ientro,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
+  subroutine lgvnx(center1,elgvn,ndipole,ientro,iterld,fsurfa,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
        rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
     ! atom used to be between rz1 and n_reg1
-    real(8),intent(inout) :: elgvn,fsurfa(mxcenter),xd(3,mxlgvn),da(3,mxlgvn),xmua(3,mxlgvn),atomfs(mxatm),evdwl(mxcenter)
+    real(8),intent(inout) :: elgvn,fsurfa(mxcenter),da(3,mxlgvn),xmua(3,mxlgvn),atomfs(mxatm),evdwl(mxcenter)
     real(8),intent(inout),allocatable :: xl(:,:),rz1(:) ! rank 1 is of dimension 3
     !real(8),intent(inout) :: rz_vdw(mxlgvn)
     real(8),intent(inout),allocatable :: rz_vdw(:)
@@ -1048,7 +1052,8 @@ contains
     real(8),intent(in) :: xw(3,*),drg_inner,drg,rzcut,q(*),ephil1,ephil2,vdwc6(82),vdwsl,clgvn
     real(8),intent(in) :: center1(3),rg,rg_inner,rgim,rpi(*),slgvn
     !character(8),intent(in) :: atom(mxatm)
-    real(8),allocatable :: vdwsur(:)
+    !real(8),allocatable :: vdwsur(:)
+    real(8) :: vdwsur(mxatm)
     real(8) :: sres,tds,efn_max,gri_sp,elgvn_i,efn,vlgvn_result(3),fma,elgvna,ddd,dddx,dddy,dddz,epot,rx,ry,rz, &
          rqd,fs
     integer :: idum,i,k
@@ -1067,17 +1072,6 @@ contains
     ! n_inner = 0 before call, 741 after call
     call gen_gridx(center1,ndipole,ientro,0,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
          vdwc6,vdwsl,evdwl,rz1,iz,rz_vdw,q)
-
-    ! --   Cartesian coordinates of point dipoles {Angstrom} are stored
-    !      (it is unclear at present why 2 different variables (xl, xd)
-    !      were used for coordinates of dipoles in the old pdld code.)
-    do i=1,ndipole
-       xd(1,i) = xl(1,i)
-       xd(2,i) = xl(2,i)
-       xd(3,i) = xl(3,i)
-    end do
-
-
     !      Calculate magnitudes of langevin dipoles and noniterative solvation
     !      energy from the electric field scaled by the distance-dependent 
     !      dielectric constant.
@@ -1248,10 +1242,11 @@ contains
          ' Noniterative lgvn energy (total,inner): ',2f10.3/)
   end subroutine lgvnx
   subroutine sci_lgvn(energy,elgvni,tds,nd,icent,itl,xl,efa,efal,drg,drg_inner,ip,ip2,ip3,isd,jp,jp2, &
-       n_inner,out_cut,rdcutl,slgvn,xd,xmua,da)
+       n_inner,out_cut,rdcutl,slgvn,xmua,da)
     real(8),intent(inout) :: tds,elgvni,efa(3,mxlgvn),efal(3,mxlgvn),xmua(3,mxlgvn),da(3,mxlgvn)
     integer,intent(inout) :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn)
-    real(8),intent(in) :: xl(3,mxlgvn),drg,drg_inner,out_cut,rdcutl,slgvn,xd(3,mxlgvn)
+    real(8),intent(in),allocatable :: xl(:,:)
+    real(8),intent(in) :: drg,drg_inner,out_cut,rdcutl,slgvn
     integer,intent(in) :: itl,nd,icent,n_inner
     integer(2),intent(inout) :: isd(mxlgvn),jp(mxpair),jp2(mxpair2)
     real(8) :: conv2,epom(44),scale,eita,eiti,eave,stepaw,energy
@@ -1260,9 +1255,7 @@ contains
     tds = 0.0d0
     write(6,1006) 
     !     write(6,1002) nd
-    !     call pairlistw(nd,xd,jp3)
-    !      call pairlistw(nd,xd)
-    call pairlistw(nd,xd,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
+    call pairlistw(nd,xl,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
     write(6,1008)
     conv2=-332.d0*slgvn
     do i=1,10
@@ -1338,14 +1331,14 @@ contains
        end if
 
        !call newf_lcut(nd,l)
-       efa = newf_lcut_f(nd,l,da,ip,jp,xd,xmua)
+       efa = newf_lcut_f(nd,l,da,ip,jp,xl,xmua)
        ! -- In the local reaction field approximation, long-range dipole-dipole
        !    interactions are updated only in the first n steps; the field from
        !    distant dipoles is fixed at its last value afterwards.
        !     if(l.lt.10.or.l.eq.45) call updatelong(nd,l,jp3)
        if(l.lt.10.or.l.eq.45) then
           !call updatelong(nd,l)
-          efal = updatelong_f(nd,l,ip2,jp2,xd,xmua)
+          efal = updatelong_f(nd,l,ip2,jp2,xl,xmua)
        endif
        stepaw=0.2
        if(l.lt.4) stepaw=0.10
@@ -1403,7 +1396,7 @@ contains
          center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
     real(8) :: oshift(3*mxcenter),tds,temp_center(mxcenter,3)
     real(8) :: vbornx_result
-    real(8) :: xd(3,mxlgvn),xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
+    real(8) :: xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
     real(8),allocatable :: xl(:,:),rz1(:) ! rank 1 is of dimension 3
     real(8),allocatable :: rz_vdw(:)
     !real(8) :: rz_vdw(mxlgvn)
@@ -1429,13 +1422,14 @@ contains
 
     do i=1,ndxp
        call ran_shift(i,pcenter,center_new,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
-       call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
+       call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
             rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
        esum = esum + elgvn
 
        if (iterld.eq.1) then
           call sci_lgvn(elgwa,elgvni,tds,ndipole,i,itl,xl,efa,efal,drg,drg_inner,ip,ip2,ip3,isd,jp,jp2,n_inner, &
-               out_cut,rdcutl,slgvn,xd,xmua,da)
+               out_cut,rdcutl,slgvn,xmua,da)
+
           temp_elgvn(i)=elgwa
           tdsl(i) = tds
        else

@@ -1,4 +1,5 @@
 module chemsol
+  use push_array, only: push
   implicit none
   real(8), parameter :: kB = 1.3806488d-23 ! Boltzmann's constant, in m^2 kg s^-2 K^-1    
   real(8), parameter :: Na = 6.023d23  ! Avogadro's constant (number), number of molecules in a mol
@@ -27,10 +28,8 @@ contains
     ! Parameter (m=714025, ia=1366, ic=150889, rm=1.0/m)
     ! local
     integer ir(97),iy,j
-    save ir, iy ! functions should not have side effects!
-    ! Data iff /0/
-    if (idum.lt.0.or.iff.eq.0) then
-       iff = 1
+    save ir,iy ! functions should not have side effects!
+    if (idum.lt.0) then
        idum=mod(ic-idum,m)
        do j=1,97
           idum=mod(ia*idum+ic,m)
@@ -48,6 +47,7 @@ contains
     ran2=iy*rm
     idum=mod(ia*idum+ic,m)
     ir(j) = idum
+    j = 1
     return
   end function ran2
   real(8) function entropy(mass)
@@ -74,35 +74,27 @@ contains
     entropy = T*S/(4.18d0*1000.d0)
     return
   end function entropy
-  subroutine ran_shift(i,center1,center2,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+  subroutine ran_shift(i,center1,center2,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
     integer,intent(in) :: i,ndxp
     real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3)
     ! this is a good candidate for a function as these may all be packed and unpacked
     ! into one big array
-    real(8),intent(inout) :: center2(3),temp_center(mxcenter,3),oshift(3*mxcenter)
+    real(8),intent(inout) :: center2(3),oshift(3*mxcenter)
     integer :: iseed,idum,dumm,kk
     real(8) :: fact,dxp(3)
-    ! common /pctimes/ ndxp,itl,itp
-    ! common /pcgrid/ drg,rg,dxp0(3),&
-    !      rg_inner,drg_inner
-    ! common /pcsav_center/ temp_center(mxcenter,3),temp_elgvn(mxcenter)
-    ! dimension oshift(3*mxcenter)
-    ! dimension dxp(3), center2(3), center1(3)
-    !save oshift ! don't see why this is needed
-
     ! --   Initialize the random number generator and
     !      generate random origin shifts for ndxp grids.
     if (i.eq.1) then
        iseed = -931
        idum = 1
-       dumm = ran2(iseed)
+       dumm = ran2(iseed) ! this essentially just initializes ran2
        do kk = 1, 3*ndxp
           oshift(kk) = ran2 (idum)
        end do
     end if
 
     fact=drg_inner
-    if(rg_inner.eq.0.d0) fact=drg
+    if(rg_inner.eq.0.d0) fact=drg ! this line would only be useful for single-atom calculations
     if(i.eq.1)fact=0.0d0
     dxp(1)=fact*(1.d0-2.d0*oshift(3*i-2))
     dxp(2)=fact*(1.d0-2.d0*oshift(3*i-1))
@@ -117,11 +109,6 @@ contains
        center2(2)=center1(2)+dxp0(2)
        center2(3)=center1(3)+dxp0(3)
     endif
-
-    temp_center(i,1)=center2(1)
-    temp_center(i,2)=center2(2)
-    temp_center(i,3)=center2(3)
-
     !      write(6,100) center1, dxp0, dxp, center2
     write(6,100) center2
 
@@ -134,21 +121,29 @@ contains
          ' Grid origin            ',3f9.3)
   end subroutine ran_shift
   subroutine gen_gridx (center1,nld,ientro,iflag,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
-       vdwc6,vdwsl,atom,evdwl,rz1,iz,rz_vdw,q)
+       vdwc6,vdwsl,evdwl,rz1,iz,rz_vdw,q)
+    ! atom fit between "vdwsl" and "evdwl"
     !implicit Real*8 (a-h,o-z)
-    integer,intent(inout) :: nld,nvol(mxcenter),n_inner,iz(mxlgvn)
-    integer(2),intent(inout) :: isd(mxlgvn)
+    integer,intent(inout) :: nld,nvol(mxcenter),n_inner
+    integer,intent(inout),allocatable :: iz(:)
+    integer(2),intent(inout),allocatable :: isd(:)
+    integer :: isd_val ! the value of isd
     integer,intent(in) :: iflag,n_reg1,ientro,iacw(*)
-    real(8),intent(inout) :: evdwl(mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),xl(3,mxlgvn)
+    real(8),intent(inout) :: evdwl(mxcenter)
+    !real(8),intent(inout) :: rz_vdw(mxlgvn)
+    real(8),intent(inout),allocatable :: rz_vdw(:)
+    real(8),intent(inout),allocatable :: xl(:,:) ! first rank is of dimension 3
+    real(8),intent(inout),allocatable :: rz1(:)
     real(8),intent(in) :: rg,drg,drg_inner,rg_inner,rgim,rpi(*),xw(3,*),center1(3),vdwc6(82),vdwsl,q(*)
 
-    character(8),intent(in) :: atom(mxatm)
+
+    ! character(8),intent(in) :: atom(mxatm)
     integer :: ns,i0,i1,i,limit_inner,limit_outer,mid_inner,mid_outer,no,index
     integer :: ii,jj,kk
     integer :: icube(0:133,0:133,0:133)
     integer :: igrid,jgrid,kgrid
     integer :: ipro,jpro,kpro
-    real(8) :: rg2,drg2,drgi2,rgi2,rgim2,drg_inner_i,drg_i,rp2(mxatm)
+    real(8) :: rg2,drg2,drgi2,rgi2,rgim2,drg_inner_i,drg_i !rp2(mxatm)
     real(8) :: ri,rj,rk,d1,d2,c6,d6,r3,r6
     real(8) :: xloca,yloca,zloca
     real(8) :: xp(3)
@@ -161,7 +156,7 @@ contains
 
     !     Set up parameters. 
     !     rg is a grid radius (outer), rgi is the same for the inner grid.
-    !     drg is outer grid spacing (3A), rgim is a trim parameter
+    !     drg is outer grid spacing (3A), rgim is a trim p mxceparameter
     !     for the inner grid.
     nld=0
     ns=0
@@ -174,9 +169,9 @@ contains
     rgim2=rgim*rgim
     drg_inner_i=1.d0/drg_inner
     drg_i=1.0d0/drg
-    do i=1,n_reg1
-       rp2(i)=rpi(i)*rpi(i)
-    end do
+    ! do i=1,n_reg1
+    !    rp2(i)=rpi(i)*rpi(i)
+    ! end do
 
     limit_inner=int(rg_inner*2/drg_inner)
     limit_outer=int(rg*2/drg)
@@ -237,7 +232,8 @@ contains
                          rj=yloca-xw(2,i)
                          rk=zloca-xw(3,i)
                          d2=ri*ri+rj*rj+rk*rk !distance from grid point
-                         if(d2.lt.rp2(i)) then
+                         !if(d2.lt.rp2(i)) then
+                         if(d2.lt.(rpi(i)*rpi(i))) then
                             icube(igrid,jgrid,kgrid)=0
                             nvol(ientro) = nvol(ientro) + 1
                          end if
@@ -274,16 +270,21 @@ contains
                    end do
                    if(d2_min.le.rgim) then !less than rgim
                       nld=nld+1
-                      !......................................................................2
-                      if(nld.gt.mxlgvn)then
-                         nld=nld-1
-                         write(6,'("Exceeds current Dipole grid limits use smaller rg in option file!")')
-                         stop
+!->                   ! this is the first time things start getting "bigger"
+
+                      if (nld .le. (size(isd)) .and. &
+                           allocated(isd)) then
+                         isd(nld) = 0
+                      else
+                         isd = push(isd,0)
                       endif
-                      isd (nld)=0
-                      xl(1,nld)=xp(1)
-                      xl(2,nld)=xp(2)
-                      xl(3,nld)=xp(3)
+
+                      if (nld.le.(size(xl,2)) .and. &
+                           allocated(xl)) then
+                         xl(1:3,nld) = xp
+                      else
+                         xl = push(xl,xp)
+                      endif
                    endif
                 endif
              end do
@@ -340,7 +341,8 @@ contains
                       rj=yloca-xw(2,i)
                       rk=zloca-xw(3,i)
                       d2=ri*ri+rj*rj+rk*rk !distance from grid point
-                      if(d2.lt.rp2(i)) icube(igrid,jgrid,kgrid)=0
+                      !if(d2.lt.rp2(i)) icube(igrid,jgrid,kgrid)=0
+                      if(d2.lt.(rpi(i)*rpi(i))) icube(igrid,jgrid,kgrid)=0
                    endif
                 end do
              end do
@@ -405,27 +407,31 @@ contains
                    efz=efz + qr*rk
                 end do
                 efnorm=sqrt(efx**2+efy**2+efz**2)
-                ! if (efnorm.lt.efmin1) goto 41
                 if (efnorm.lt.efmin1) cycle kloop
                 nld=nld+1
-                if(nld.gt.mxlgvn) then
-                   nld=nld-1
-                   write(6,'("Exceeds current Dipole grid limits use smaller rg in option file!")')
-                   stop
-                endif
 
+                ! set the values
                 if(efnorm.lt.efmin2) then
-                   isd (nld)=1
+!-> isd should be able to grow
+                   isd_val = 1
                    ns = ns + 1
                 else
-                   isd (nld)=0
+                   isd_val = 0
                 end if
-
-                xl(1,nld)=xp(1)
-                xl(2,nld)=xp(2)
-                xl(3,nld)=xp(3)
+                ! no allocation checks here because isd and xl should
+                ! at least be allocated by now
+                if (nld.le.(size(isd))) then
+                   isd(nld) = isd_val
+                else
+                   isd = push(isd,isd_val)
+                endif
+!-> xl should be able to grow
+                if (nld.le.(size(xl,2))) then
+                   xl(1:3,nld) = xp
+                else
+                   xl = push(xl,xp)
+                endif
              endif
-             !41         continue
           end do kloop
        end do jloop
     end do iloop
@@ -444,7 +450,11 @@ contains
 
     !     Collect distances of grid dipoles to solute nuclei (rz1) and 
     !     solute boundary (rz_vdw). Note that rz1 is a SQUARE of the dist.
+    if (.not. allocated(rz1)) allocate(rz1(nld))
+    if (.not. allocated(iz)) allocate(iz(nld))
+    if (.not. allocated(rz_vdw)) allocate(rz_vdw(nld))
     do i=1,nld
+!-> rz1 will have to be allocated
        rz1(i)=10000.0d0  
        d2_min=10000.0d0
        do index=1,n_reg1 
@@ -460,13 +470,14 @@ contains
              stop
           elseif(d2.le.d2_min) then
              d2_min=d2
+!-> iz will have to be allocated
              iz(i)=index
+!-> rz_vdw will have to be allocated
              rz_vdw(i)=d2
           end if
        enddo
        !        write(6,'(i7,i6,f10.3)') i, iz(i), rz_vdw(i) 
     enddo
-
     ! --  VdW energy (9-6 formula)
     !     The minimum of the VdW curve is at the rp distance.
     !     London coeficients (vdwC6) are atom dependent, but they are not 
@@ -1024,17 +1035,21 @@ contains
     !         'equation')
   end function vbornx_f
   subroutine lgvnx(center1,elgvn,ndipole,ientro,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
-       rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
+       rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
+    ! atom used to be between rz1 and n_reg1
     real(8),intent(inout) :: elgvn,fsurfa(mxcenter),xd(3,mxlgvn),da(3,mxlgvn),xmua(3,mxlgvn),atomfs(mxatm),evdwl(mxcenter)
-    real(8),intent(inout) :: xl(3,mxlgvn),rz1(mxlgvn),rz_vdw(mxlgvn)
-    integer,intent(inout) :: ndipole,iz(mxlgvn),nvol(mxcenter),n_inner
+    real(8),intent(inout),allocatable :: xl(:,:),rz1(:) ! rank 1 is of dimension 3
+    !real(8),intent(inout) :: rz_vdw(mxlgvn)
+    real(8),intent(inout),allocatable :: rz_vdw(:)
+    integer,intent(inout) :: ndipole,nvol(mxcenter),n_inner
+    integer,intent(inout),allocatable :: iz(:)
     integer,intent(in) :: ientro,iacw(*),iterld,n_reg1
-    integer(2),intent(inout) :: isd(mxlgvn)
+    integer(2),intent(inout),allocatable :: isd(:)
     real(8),intent(in) :: xw(3,*),drg_inner,drg,rzcut,q(*),ephil1,ephil2,vdwc6(82),vdwsl,clgvn
     real(8),intent(in) :: center1(3),rg,rg_inner,rgim,rpi(*),slgvn
-    character(8),intent(in) :: atom(mxatm)
-
-    real(8) :: sres,tds,efn_max,vdwsur(mxatm),gri_sp,elgvn_i,efn,vlgvn_result(3),fma,elgvna,ddd,dddx,dddy,dddz,epot,rx,ry,rz, &
+    !character(8),intent(in) :: atom(mxatm)
+    real(8),allocatable :: vdwsur(:)
+    real(8) :: sres,tds,efn_max,gri_sp,elgvn_i,efn,vlgvn_result(3),fma,elgvna,ddd,dddx,dddy,dddz,epot,rx,ry,rz, &
          rqd,fs
     integer :: idum,i,k
     elgvn=0.d0 !total lgvn energy
@@ -1051,7 +1066,7 @@ contains
     ! after this is called, ndipole is set
     ! n_inner = 0 before call, 741 after call
     call gen_gridx(center1,ndipole,ientro,0,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
-         vdwc6,vdwsl,atom,evdwl,rz1,iz,rz_vdw,q)
+         vdwc6,vdwsl,evdwl,rz1,iz,rz_vdw,q)
 
     ! --   Cartesian coordinates of point dipoles {Angstrom} are stored
     !      (it is unclear at present why 2 different variables (xl, xd)
@@ -1382,19 +1397,26 @@ contains
     real(8),intent(in) :: xw(3,*)
     real(8),intent(in) :: drg,drg_inner,rdcutl,out_cut
     integer,intent(in) :: iprint,iacw(*),n_reg1,itl
+    integer(2),allocatable :: isd(:)
     character(8),intent(in) :: atom(*)
-    real(8) :: esum,atomfs(mxatm),temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
+    real(8) :: esum,temp_elgvn(mxcenter),tdsl(mxcenter),tdsw_a,vatom_result(2),elgvn_ave_result(4), &
          center_new(3),da(3,mxlgvn),elgvni,efa(3,mxlgvn),efal(3,mxlgvn)
-    real(8) :: oshift(3*mxcenter),rz1(mxlgvn),rz_vdw(mxlgvn),tds,temp_center(mxcenter,3)
+    real(8) :: oshift(3*mxcenter),tds,temp_center(mxcenter,3)
     real(8) :: vbornx_result
-    real(8) :: xd(3,mxlgvn),xl(3,mxlgvn),xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
+    real(8) :: xd(3,mxlgvn),xmua(3,mxlgvn),fsurfa(mxcenter),evdwl(mxcenter)
+    real(8),allocatable :: xl(:,:),rz1(:) ! rank 1 is of dimension 3
+    real(8),allocatable :: rz_vdw(:)
+    !real(8) :: rz_vdw(mxlgvn)
     real(8) :: ecor ! used to be an input variable, not really used in the rest of the program
-    integer :: i,j,iz(mxlgvn),n_inner,ndipole
+    integer :: i,j,n_inner,ndipole
+    integer,allocatable :: iz(:)
     integer :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn),nvol(mxcenter)
-    integer(2) :: isd(mxlgvn),jp(mxpair),jp2(mxpair2)
+    integer(2) :: jp(mxpair),jp2(mxpair2)
+    real(8),allocatable :: atomfs(:)
     esum = 0.d0
     evqdq = 0.d0
     ecor=0.d0
+    allocate(atomfs(n_reg1))
     do i=1,n_reg1
        atomfs(i)=0.0d0
     end do
@@ -1406,14 +1428,9 @@ contains
     !      ecor.......correction for electron correlation effects         
 
     do i=1,ndxp
-       call ran_shift(i,pcenter,center_new,temp_center,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
-       !        Set grid origin for the printout of dipoles into an xmol input file.
-       !        center_new(1)=0.0
-       !        center_new(2)=0.0
-       !        center_new(3)=0.0
-       !call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner,rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi)
+       call ran_shift(i,pcenter,center_new,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
        call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,xd,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
-            rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,atom,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
+            rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
        esum = esum + elgvn
 
        if (iterld.eq.1) then
@@ -1462,6 +1479,8 @@ contains
     !call vbornx(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
     vbornx_result = vbornx_f(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
     ebw = vbornx_result
+    ! deallocate memory
+    deallocate(atomfs)
     return
     !.......................................................................
 102 format(1x,72a1)
@@ -1603,14 +1622,14 @@ contains
     do i=1, n_reg1
        if (vdwc6(iacw(i)) .eq.0.d0 ) then
           if(vdwc6(iacw(i)-1).ne.0) then
-             vdwc6(iacw(i)) = vdwc6(iacw(i)-1)
+             vdwc6(iacw(i)) = vdwc6(iacw(i)-1) 
           else
-             vdwc6(iacw(i)) = vdwc6(iacw(i)-2)
+             vdwc6(iacw(i)) = vdwc6(iacw(i)-2) ! basically, the vdwc6 is only set to non-zero when the current atom has a vdwc6 that is two or fewer previously defined
           end if
        end if
-       if (vdwc6(iacw(i)) .eq.0.d0 ) then
-          if (iacw(i).le.17) vdwc6(iacw(i))=vdwc6(6)
-          if (iacw(i).gt.17) vdwc6(iacw(i))=vdwc6(22)
+       if (vdwc6(iacw(i)) .eq.0.d0 ) then ! otherwise for 0 values
+          if (iacw(i).le.17) vdwc6(iacw(i))=vdwc6(6) ! use C0's vdwc6
+          if (iacw(i).gt.17) vdwc6(iacw(i))=vdwc6(22) ! use P's vdwc6'
        end if
     end do
 
@@ -1619,16 +1638,13 @@ contains
     !     this function (srp) differs for 1st and 2nd row atoms.
     !     In addition, for inorganic oxygen (iacw=15)
     !     a separate rp(H) is used (it is read from vdw.par file).
-    ! do 60 i=1,n_reg1
     do i=1,n_reg1
        if(iacw(i).ne.1 .and.iacw(i).ne.2) then
           rpi(i) = rp(iacw(i))
        else
           r2min = 100.
           jmin = 21
-          !do 50 j=1,n_reg1
           do j=1,n_reg1
-             !if(j.eq.i) go to 50
              if(j.eq.i) cycle
              r2=(xw(1,i)-xw(1,j))**2+(xw(2,i)-xw(2,j))**2 &
                   +(xw(3,i)-xw(3,j))**2
@@ -1637,17 +1653,18 @@ contains
                 jmin=j
              end if
           end do
-          !50         continue
-          if((iacw(jmin)).eq.15) then
-             iacw(i) = 2
-             rpi(i) = rp(iacw(i))
-             vdwc6(iacw(i)) = vdwc6(iacw(i)-1)
+          if((iacw(jmin)).eq.15) then ! if the atom is attached to O2
+             iacw(i) = 2 ! He when H and He have the same radii
+                         ! iacw only ever used again to calculate vdw enthalpy in gen_gridx; H and He
+                         ! are treated the same in Chemsol
+             rpi(i) = rp(iacw(i)) ! use He radius (look at rp in main)
+             vdwc6(iacw(i)) = vdwc6(iacw(i)-1) ! need to decouple vdwc6 from rp mapping
+                                               ! what happens if vdwc6(iacw(i)) is used for another atom?
           else
-             if(iacw(jmin).lt.18) rpi(i) = srp * rp(iacw(jmin))
-             if(iacw(jmin).ge.18) rpi(i) = (srp-0.1)*rp(iacw(jmin))
+             if(iacw(jmin).lt.18) rpi(i) = srp * rp(iacw(jmin)) ! if the atom is attached to a second period atom
+             if(iacw(jmin).ge.18) rpi(i) = (srp-0.1)*rp(iacw(jmin)) ! if the atom is attached to a third period or greater atom
           end if
        end if
-       !60      continue
     end do
 
     ! --  Finally, allow for the change of rp parameter of any atom

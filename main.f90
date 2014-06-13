@@ -221,8 +221,10 @@ program main
   k1 = 0
   k2 = 0
   k3 = 0
+  ! essentially checks to make sure that the charges are whole numbers within the range
+  ! of 9 to -9
   do i=1,10
-     if (abs( abs (qsum1)-float(i)+1.0).lt. 0.012) k1=1
+     if (abs (abs (qsum1)-float(i)+1.0).lt. 0.012) k1=1
      if (abs (abs (qsum2)-float(i)+1.0).lt. 0.012) k2=1
      if (abs (abs (qsum3)-float(i)+1.0).lt. 0.012) k3=1
   end do

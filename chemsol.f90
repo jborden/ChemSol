@@ -8,10 +8,10 @@ module chemsol
   real(8), parameter :: e = 2.71828    ! Euler's number
   real(8), parameter :: amu = 1.66d-27 ! The dalton, in kg
 
-  integer,parameter  :: mxlgvn = 10000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
-  integer,parameter  :: mxatm = 500 ! maximum amount of atoms allowed, should be dynamic
-  integer,parameter  :: mxpair  = 5000000 ! maximum amount of pairs allowed
-  integer,parameter :: mxpair2 = 10000000 ! maximum amount of interacting pairs allowed ???
+  integer,parameter  :: mxlgvn  = 20000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
+  integer,parameter  :: mxatm   = 984 ! maximum amount of atoms allowed, should be dynamic
+  integer,parameter  :: mxpair  = 100000000 ! maximum amount of pairs allowed
+  integer,parameter :: mxpair2  = 100000000 ! maximum amount of interacting pairs allowed ???
   integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
   integer :: iff = 0 ! a switch that tells ran2 if it has been called or not, global state
 contains
@@ -450,9 +450,15 @@ contains
 
     !     Collect distances of grid dipoles to solute nuclei (rz1) and 
     !     solute boundary (rz_vdw). Note that rz1 is a SQUARE of the dist.
-    if (.not. allocated(rz1)) allocate(rz1(nld))
-    if (.not. allocated(iz)) allocate(iz(nld))
-    if (.not. allocated(rz_vdw)) allocate(rz_vdw(nld))
+    ! if (.not. allocated(rz1)) allocate(rz1(nld))
+    ! if (.not. allocated(iz)) allocate(iz(nld))
+    ! if (.not. allocated(rz_vdw)) allocate(rz_vdw(nld))
+    if (allocated(rz1)) deallocate(rz1)
+    if (allocated(iz)) deallocate(iz)
+    if (allocated(rz_vdw)) deallocate(rz_vdw)
+    allocate(rz1(nld))
+    allocate(iz(nld))
+    allocate(rz_vdw(nld))
     do i=1,nld
 !-> rz1 will have to be allocated
        rz1(i)=10000.0d0  
@@ -580,7 +586,7 @@ contains
   subroutine pairlistw(nd,xl,rdcutl,out_cut,ip,ip2,ip3,isd,jp,jp2)
     ! integer,parameter  :: mxlgvn=10000
     ! integer,parameter  :: mxpair=5000000
-    integer,parameter  :: mxpair2=10000000
+    ! integer,parameter  :: mxpair2=10000000
     integer,intent(in) :: nd
     integer,intent(inout) :: ip(0:mxlgvn),ip2(0:mxlgvn),ip3(0:mxlgvn)
     integer(2),intent(inout) :: jp(mxpair),jp2(mxpair2)
@@ -712,7 +718,7 @@ contains
   function updatelong_f(nd,l,ip2,jp2,xl,xmua) result (efal)
     !integer,parameter  :: mxlgvn  = 10000
     ! integer,parameter  :: mxpair  = 5000000
-    integer,parameter  :: mxpair2 = 10000000
+    ! integer,parameter  :: mxpair2 = 10000000
     integer,intent(in) :: nd,l,ip2(0:mxlgvn)
     integer(2),intent(in) :: jp2(mxpair2)
     real(8),intent(in) :: xmua(3,mxlgvn)
@@ -1474,7 +1480,7 @@ contains
     vbornx_result = vbornx_f(ndipole,ebw,n_inner,center_new,rg_reg1,rgim,n_reg1,q,xw)
     ebw = vbornx_result
     ! deallocate memory
-    deallocate(atomfs)
+    !deallocate(atomfs)
     return
     !.......................................................................
 102 format(1x,72a1)

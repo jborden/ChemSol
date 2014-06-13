@@ -15,7 +15,10 @@ test5:
 	time $(main) vdw.par test5.cs >& test5_main.out & 	
 test6: 
 	time $(main) vdw.par 1LYZ_edit_HIS_to_HIP_Q5.cs >& test6_main.out &
-
+test7: 
+	time $(main) vdw.par test7.cs >& test7_main.out &
+test8:
+	time $(main) vdw.par test8.cs >& test8_main.out &
 diff1: 	
 	diff --side-by-side --suppress-common-lines test1.log test1_main.out 
 diff2:	

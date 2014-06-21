@@ -15,6 +15,30 @@ module chemsol
   integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
   integer :: iff = 0 ! a switch that tells ran2 if it has been called or not, global state
 contains
+  real(8) function entropy(mass)
+    ! molecular mass 
+    real(8), intent(in) :: mass
+    real(8) :: T,V,m,n,S1,S2,S
+    real(8) :: molecular_count
+    ! constants
+    ! note: current accepted value is 6.022    
+    T = 298.15     ! Temperature, in Kelvin's
+    V = 1d-3       ! Volume has square ?
+    ! convert the atomic mass into kilograms
+    m = amu * mass
+    ! molarity of gas (should be a function argument that defaults to 1)
+    n = 1.0
+    ! calculate the total amount of molecules present
+    molecular_count = Na * n 
+    ! would like to have this better commented
+    S1 = sqrt((2*pi*m*kB*T)**3)/h**3
+    S2 = V*sqrt(e**5)/molecular_count
+    S = S1*S2
+    S = dlog(S)
+    S = molecular_count*kB*S/n
+    entropy = T*S/(4.18d0*1000.d0)
+    return
+  end function entropy
   real(8) function ran2 (idum)
     ! implicit Real*8 (a-h,o-z)
     !     Returns a uniform random numbers between 0.0 and 1.0.
@@ -50,30 +74,20 @@ contains
     j = 1
     return
   end function ran2
-  real(8) function entropy(mass)
-    ! molecular mass 
-    real(8), intent(in) :: mass
-    real(8) :: T,V,m,n,S1,S2,S
-    real(8) :: molecular_count
-    ! constants
-    ! note: current accepted value is 6.022    
-    T = 298.15     ! Temperature, in Kelvin's
-    V = 1d-3       ! Volume has square ?
-    ! convert the atomic mass into kilograms
-    m = amu * mass
-    ! molarity of gas (should be a function argument that defaults to 1)
-    n = 1.0
-    ! calculate the total amount of molecules present
-    molecular_count = Na * n 
-    ! would like to have this better commented
-    S1 = sqrt((2*pi*m*kB*T)**3)/h**3
-    S2 = V*sqrt(e**5)/molecular_count
-    S = S1*S2
-    S = dlog(S)
-    S = molecular_count*kB*S/n
-    entropy = T*S/(4.18d0*1000.d0)
+  function generate_oshift(ndxp) result (oshift)
+    integer,intent(in) :: ndxp
+    integer :: iseed,idum,dumm,kk
+    real(8) :: oshift(3*mxcenter)
+    ! --   Initialize the random number generator and
+    !      generate random origin shifts for ndxp grids.
+    iseed = -931
+    idum = 1
+    dumm = ran2(iseed) ! this essentially just initializes ran2
+    do kk = 1, 3*ndxp
+       oshift(kk) = ran2 (idum)
+    end do
     return
-  end function entropy
+  end function generate_oshift
   subroutine ran_shift(i,center1,center2,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
     integer,intent(in) :: i,ndxp
     real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3)
@@ -82,16 +96,7 @@ contains
     real(8),intent(inout) :: center2(3),oshift(3*mxcenter)
     integer :: iseed,idum,dumm,kk
     real(8) :: fact,dxp(3)
-    ! --   Initialize the random number generator and
-    !      generate random origin shifts for ndxp grids.
-    if (i.eq.1) then
-       iseed = -931
-       idum = 1
-       dumm = ran2(iseed) ! this essentially just initializes ran2
-       do kk = 1, 3*ndxp
-          oshift(kk) = ran2 (idum)
-       end do
-    end if
+    
 
     fact=drg_inner
     if(rg_inner.eq.0.d0) fact=drg ! this line would only be useful for single-atom calculations
@@ -1425,7 +1430,9 @@ contains
     !      elgwa......iterative lgvn energy 
     !      evqdq......solute relaxation energy calculated from PCM charges
     !      ecor.......correction for electron correlation effects         
-
+    
+    ! generate oshift points
+    oshift = generate_oshift(ndxp)
     do i=1,ndxp
        call ran_shift(i,pcenter,center_new,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
        call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &

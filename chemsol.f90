@@ -88,12 +88,13 @@ contains
     end do
     return
   end function generate_oshift
-  subroutine ran_shift(i,center1,center2,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+  function ran_shift(i,center1,ndxp,drg,drg_inner,rg_inner,dxp0,oshift) result (center2)
     integer,intent(in) :: i,ndxp
-    real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3)
+    real(8),intent(in) :: center1(3),drg,drg_inner,rg_inner,dxp0(3),oshift(3*mxcenter)
     ! this is a good candidate for a function as these may all be packed and unpacked
     ! into one big array
-    real(8),intent(inout) :: center2(3),oshift(3*mxcenter)
+    !real(8),intent(inout) :: center2(3),oshift(3*mxcenter)
+    real(8) :: center2(3)
     integer :: iseed,idum,dumm,kk
     real(8) :: fact,dxp(3)
     
@@ -115,7 +116,7 @@ contains
        center2(3)=center1(3)+dxp0(3)
     endif
     !      write(6,100) center1, dxp0, dxp, center2
-    write(6,100) center2
+    write(6,100) center2 ! function shouldn't have side effects
 
     return
     !......................................................................
@@ -124,7 +125,7 @@ contains
                                 !    s ' original origin shift ',3f9.3/
                                 !    s ' random origin shift   ',3f9.3/
          ' Grid origin            ',3f9.3)
-  end subroutine ran_shift
+  end function ran_shift
   subroutine gen_gridx (center1,nld,ientro,iflag,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
        vdwc6,vdwsl,evdwl,rz1,iz,rz_vdw,q)
     ! atom fit between "vdwsl" and "evdwl"
@@ -1434,7 +1435,8 @@ contains
     ! generate oshift points
     oshift = generate_oshift(ndxp)
     do i=1,ndxp
-       call ran_shift(i,pcenter,center_new,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+       !call ran_shift(i,pcenter,center_new,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
+       center_new = ran_shift(i,pcenter,ndxp,drg,drg_inner,rg_inner,dxp0,oshift)
        call lgvnx(center_new,elgvn,ndipole,i,iterld,fsurfa,da,xmua,atomfs,iz,evdwl,xl,drg_inner,drg,n_inner, &
             rz_vdw,rzcut,q,ephil1,ephil2,vdwc6,iacw,vdwsl,clgvn,slgvn,isd,rz1,n_reg1,nvol,rg,rg_inner,rgim,rpi,xw)
        esum = esum + elgvn

@@ -1,5 +1,5 @@
 FC = gfortran
-main=../main
+main=../chemsol
 
 .PHONY: test diff
 

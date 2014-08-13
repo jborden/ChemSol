@@ -13,4 +13,5 @@ atom-charges.txt
 atoms.txt
 dipoles.txt
 da.txt
-
+result.log.trace/*
+chemsol

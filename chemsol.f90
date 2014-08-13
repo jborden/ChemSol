@@ -11,8 +11,8 @@ module chemsol
   integer,parameter  :: mxlgvn  = 20000 ! maximum allowed langevin dipoles,  should use dynamic arrays in gen_gridx
   integer,parameter  :: mxatm   = 984 ! maximum amount of atoms allowed, should be dynamic
   integer,parameter  :: mxpair  = 100000000 ! maximum amount of pairs allowed
-  integer,parameter :: mxpair2  = 100000000 ! maximum amount of interacting pairs allowed ???
-  integer,parameter :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
+  integer,parameter  :: mxpair2  = 100000000 ! maximum amount of interacting pairs allowed ???
+  integer,parameter  :: mxcenter = 50 ! needed by ran_shift and elgvn_ave
   integer :: iff = 0 ! a switch that tells ran2 if it has been called or not, global state
 contains
   real(8) function entropy(mass)
@@ -126,11 +126,11 @@ contains
                                 !    s ' random origin shift   ',3f9.3/
          ' Grid origin            ',3f9.3)
   end function ran_shift
-  subroutine gen_gridx (center1,nld,ientro,iflag,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
+  subroutine gen_gridx (center1,ndipole,ientro,iflag,nvol,isd,xl,n_inner,n_reg1,rg,drg,drg_inner,rg_inner,rgim,rpi,xw,iacw, &
        vdwc6,vdwsl,evdwl,rz1,iz,rz_vdw,q)
     ! atom fit between "vdwsl" and "evdwl"
     !implicit Real*8 (a-h,o-z)
-    integer,intent(inout) :: nld,nvol(mxcenter),n_inner
+    integer,intent(inout) :: ndipole,nvol(mxcenter),n_inner
     integer,intent(inout),allocatable :: iz(:)
     integer(2),intent(inout),allocatable :: isd(:)
     integer :: isd_val ! the value of isd
@@ -158,13 +158,13 @@ contains
     integer :: iprint = 0 ! set this to 1 for debug information
     !     generate grid point for langevin dipole
     !     center1...center of the grid (input)
-    !     nld...number of grid points (output)
+    !     ndipole...number of grid points (output)
 
     !     Set up parameters. 
     !     rg is a grid radius (outer), rgi is the same for the inner grid.
     !     drg is outer grid spacing (3A), rgim is a trim p mxceparameter
     !     for the inner grid.
-    nld=0
+    ndipole=0
     ns=0
     i0=1
     i1=n_reg1
@@ -179,7 +179,7 @@ contains
     !    rp2(i)=rpi(i)*rpi(i)
     ! end do
 
-    limit_inner=int(rg_inner*2/drg_inner)
+    limit_inner=int(rg_inner*2/drg_inner) 
     limit_outer=int(rg*2/drg)
     !*
     !*     [make both limits into an odd number]
@@ -190,10 +190,10 @@ contains
     mid_outer=int(limit_outer/2.d0+0.5d0)
 
     !......................................................
-    !     build inner grid, if used.
+    !     build inner grid, if used. 
     !......................................................
 
-    if(rg_inner.gt.0.d0) then ! build inner grid
+    if(rg_inner.gt.0.d0) then ! build inner grid, rg_inner should ALWAYS be > 0!
        do  ii=0,limit_inner
           do jj=0,limit_inner
              do  kk=0,limit_inner
@@ -275,19 +275,19 @@ contains
                       end if
                    end do
                    if(d2_min.le.rgim) then !less than rgim
-                      nld=nld+1
+                      ndipole=ndipole+1
 !->                   ! this is the first time things start getting "bigger"
 
-                      if (nld .le. (size(isd)) .and. &
+                      if (ndipole .le. (size(isd)) .and. &
                            allocated(isd)) then
-                         isd(nld) = 0
+                         isd(ndipole) = 0
                       else
                          isd = push(isd,0)
                       endif
 
-                      if (nld.le.(size(xl,2)) .and. &
+                      if (ndipole.le.(size(xl,2)) .and. &
                            allocated(xl)) then
-                         xl(1:3,nld) = xp
+                         xl(1:3,ndipole) = xp
                       else
                          xl = push(xl,xp)
                       endif
@@ -298,8 +298,8 @@ contains
        end do
     endif
 
-    n_inner=nld
-    write(6,1003) nld 
+    n_inner=ndipole
+    write(6,1003) ndipole 
 1003 format(/' No of inner grid dipoles              : ',i10)
     !......................................................
     !     build outer grid (3.0 spacing)
@@ -414,7 +414,7 @@ contains
                 end do
                 efnorm=sqrt(efx**2+efy**2+efz**2)
                 if (efnorm.lt.efmin1) cycle kloop
-                nld=nld+1
+                ndipole=ndipole+1
 
                 ! set the values
                 if(efnorm.lt.efmin2) then
@@ -426,14 +426,14 @@ contains
                 end if
                 ! no allocation checks here because isd and xl should
                 ! at least be allocated by now
-                if (nld.le.(size(isd))) then
-                   isd(nld) = isd_val
+                if (ndipole.le.(size(isd))) then
+                   isd(ndipole) = isd_val
                 else
                    isd = push(isd,isd_val)
                 endif
 !-> xl should be able to grow
-                if (nld.le.(size(xl,2))) then
-                   xl(1:3,nld) = xp
+                if (ndipole.le.(size(xl,2))) then
+                   xl(1:3,ndipole) = xp
                 else
                    xl = push(xl,xp)
                 endif
@@ -448,7 +448,7 @@ contains
     !     eliminate artifacts related to the regularity of the cubic 
     !     grid.
     !
-    !     do i = n_inner+1, nld
+    !     do i = n_inner+1, ndipole
     !       xl(1,i) = xl(1,i) + ran2(idum)/2.d0 -0.5d0
     !       xl(2,i) = xl(2,i) + ran2(idum)/2.d0 -0.5d0
     !       xl(3,i) = xl(3,i) + ran2(idum)/2.d0 -0.5d0
@@ -456,16 +456,16 @@ contains
 
     !     Collect distances of grid dipoles to solute nuclei (rz1) and 
     !     solute boundary (rz_vdw). Note that rz1 is a SQUARE of the dist.
-    ! if (.not. allocated(rz1)) allocate(rz1(nld))
-    ! if (.not. allocated(iz)) allocate(iz(nld))
-    ! if (.not. allocated(rz_vdw)) allocate(rz_vdw(nld))
+    ! if (.not. allocated(rz1)) allocate(rz1(ndipole))
+    ! if (.not. allocated(iz)) allocate(iz(ndipole))
+    ! if (.not. allocated(rz_vdw)) allocate(rz_vdw(ndipole))
     if (allocated(rz1)) deallocate(rz1)
     if (allocated(iz)) deallocate(iz)
     if (allocated(rz_vdw)) deallocate(rz_vdw)
-    allocate(rz1(nld))
-    allocate(iz(nld))
-    allocate(rz_vdw(nld))
-    do i=1,nld
+    allocate(rz1(ndipole))
+    allocate(iz(ndipole))
+    allocate(rz_vdw(ndipole))
+    do i=1,ndipole
 !-> rz1 will have to be allocated
        rz1(i)=10000.0d0  
        d2_min=10000.0d0

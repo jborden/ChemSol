@@ -1,23 +1,27 @@
 FC = gfortran
-FCFLAGS = -g 
-objects = chemsol.o push_array.o
+FCFLAGS =
+SRCDIR = src
+objects = $(SRCDIR)/chemsol.o $(SRCDIR)/push_array.o
 
+chemsol: $(objects)
+	$(FC) $(FCFLAGS) -o chemsol $(SRCDIR)/main.f90 $(objects) 	
 
-cs: $(objects)
-	$(FC) $(FCFLAGS) -fdump-core -o chemsol main.f90 $(objects) 	
+debug: $(objects)
+	$(FC) -g -o chemsol $(SRCDIR)/main.f90 $(objects)
 
-cs21: 
+legacy: 
 	$(FC) $(FCFLAGS) -o cs21 legacy/cs21.f
 
-chemsol.o: push_array.o
 
-%.o: %.f90
+$(SRCDIR)/chemsol.o: $(SRCDIR)/push_array.o
+
+$(SRCDIR)/%.o: $(SRCDIR)/%.f90
+	$(FC) $(FCFLAGS) -c $< -o $@
+
+$(SRCDIR)/%.o: %.f
 	$(FC) $(FCFLAGS) -c $<
 
-%.o: %.f
-	$(FC) $(FCFLAGS) -c $<
-
-.PHONY: clean
+.PHONY: clean legacy
 
 clean: 
-	rm -f *.o *.mod *.MOD 
+	rm -rf *.o *.mod *.MOD chemsol cs21 chemsol.dSYM $(SRCDIR)/*.o $(SRCDIR)/*.mod $(SRCDIR)/*.MOD
